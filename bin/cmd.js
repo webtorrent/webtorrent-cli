@@ -370,16 +370,14 @@ function runDownload (torrentId) {
     if (argv.vlc && process.platform === 'win32') {
       var Registry = require('winreg')
 
-      var key
-      if (process.arch === 'x64') {
+      var key = new Registry({
+        hive: Registry.HKLM,
+        key: '\\Software\\VideoLAN\\VLC'
+      })
+      if(!key) {
         key = new Registry({
           hive: Registry.HKLM,
           key: '\\Software\\Wow6432Node\\VideoLAN\\VLC'
-        })
-      } else {
-        key = new Registry({
-          hive: Registry.HKLM,
-          key: '\\Software\\VideoLAN\\VLC'
         })
       }
 
