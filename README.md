@@ -35,7 +35,7 @@ To use WebTorrent in the browser, see [`webtorrent`](https://www.npmjs.com/packa
 - **Insanely fast**
 - **Pure Javascript** (no native dependencies)
 - Streaming
-  - Stream to **AirPlay**, **Chromecast**, **VLC player**, and many other devices/players
+  - Stream to **AirPlay**, **Chromecast**, **VLC player**, **IINA**, and many other devices/players
   - Fetches pieces from the network on-demand so seeking is supported (even before torrent is finished)
   - Seamlessly switches between sequential and rarest-first piece selection strategy
 - Supports advanced torrent client features
@@ -85,6 +85,7 @@ Options (streaming):
     --mpv                   MPV
     --omx [jack]            omx [default: hdmi]
     --vlc                   VLC
+    --iina                  IINA
     --xbmc                  XBMC
     --stdout                standard out (implies --quiet)
 

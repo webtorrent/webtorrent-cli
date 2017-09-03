@@ -12,6 +12,7 @@ var mime = require('mime')
 var minimist = require('minimist')
 var moment = require('moment')
 var networkAddress = require('network-address')
+var open = require('open')
 var parseTorrent = require('parse-torrent')
 var path = require('path')
 var prettierBytes = require('prettier-bytes')
@@ -59,6 +60,7 @@ var argv = minimist(process.argv.slice(2), {
     'mpv',
     'not-on-top',
     'vlc',
+    'iina',
     'xbmc',
     'stdout',
     'quiet',
@@ -150,6 +152,7 @@ var playerName = argv.airplay ? 'Airplay'
   : argv.mpv ? 'mpv'
   : argv.omx ? 'OMXPlayer'
   : argv.vlc ? 'VLC'
+  : argv.iina ? 'IINA'
   : argv.xbmc ? 'XBMC'
   : null
 
@@ -202,7 +205,7 @@ function handleMultipleInputs (inputs) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
   let invalidArguments = [
-    'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'xbmc',
+    'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
     'stdout', 'select', 'subtitles'
   ]
 
@@ -259,6 +262,7 @@ Options (streaming):
     --mpv                     MPV
     --omx [jack]              omx [default: hdmi]
     --vlc                     VLC
+    --iina                    IINA
     --xbmc                    XBMC
     --stdout                  standard out (implies --quiet)
 
@@ -439,6 +443,8 @@ function runDownload (torrentId) {
           openPlayer(vlcCmd + ' ' + href + ' ' + VLC_ARGS)
         }
       })
+    } else if ( argv.iina ) {
+      open('iina://weblink?url=' + href)
     } else if (argv.mplayer) {
       openPlayer(MPLAYER_EXEC + ' ' + href)
     } else if (argv.mpv) {
