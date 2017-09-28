@@ -443,7 +443,7 @@ function runDownload (torrentId) {
           openPlayer(vlcCmd + ' ' + href + ' ' + VLC_ARGS)
         }
       })
-    } else if ( argv.iina ) {
+    } else if (argv.iina) {
       open('iina://weblink?url=' + href)
     } else if (argv.mplayer) {
       openPlayer(MPLAYER_EXEC + ' ' + href)
