@@ -19,7 +19,7 @@
     "dlnacasts": "^0.1.0",
     "ecstatic": "^3.0.0",
     "executable": "^4.0.0",
-    "mime": "^2.0.3",
+    "mime": "^1.4.1",
     "minimist": "^1.2.0",
     "moment": "^2.12.0",
     "network-address": "^1.1.0",
