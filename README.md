@@ -31,6 +31,8 @@ To use WebTorrent in the browser, see [`webtorrent`](https://www.npmjs.com/packa
 
 ### Features
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/webtorrent/webtorrent-cli.svg)](https://greenkeeper.io/)
+
 - **Use [WebTorrent](https://webtorrent.io) from the command line!**
 - **Insanely fast**
 - **Pure Javascript** (no native dependencies)
