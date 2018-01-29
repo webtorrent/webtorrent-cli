@@ -14,7 +14,6 @@
     <a href="https://npmjs.com/package/webtorrent-cli"><img src="https://img.shields.io/npm/v/webtorrent-cli.svg" alt="npm version"></a>
     <a href="https://npmjs.org/package/webtorrent-cli"><img src="https://img.shields.io/npm/dm/webtorrent-cli.svg" alt="npm downloads"></a>
     <a href="https://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="javascript style guide"></a>
-    <a href="https://greenkeeper.io/"><img src="https://badges.greenkeeper.io/webtorrent/webtorrent-cli.svg" alt="Greenkeeper badge"></a>
 </p>
 <br>
 
