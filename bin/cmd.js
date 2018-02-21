@@ -147,14 +147,14 @@ if (argv['on-exit']) {
 
 var playerName = argv.airplay ? 'Airplay'
   : argv.chromecast ? 'Chromecast'
-  : argv.dlna ? 'DLNA'
-  : argv.mplayer ? 'MPlayer'
-  : argv.mpv ? 'mpv'
-  : argv.omx ? 'OMXPlayer'
-  : argv.vlc ? 'VLC'
-  : argv.iina ? 'IINA'
-  : argv.xbmc ? 'XBMC'
-  : null
+    : argv.dlna ? 'DLNA'
+      : argv.mplayer ? 'MPlayer'
+        : argv.mpv ? 'mpv'
+          : argv.omx ? 'OMXPlayer'
+            : argv.vlc ? 'VLC'
+              : argv.iina ? 'IINA'
+                : argv.xbmc ? 'XBMC'
+                  : null
 
 var command = argv._[0]
 
