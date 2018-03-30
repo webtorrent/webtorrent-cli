@@ -219,7 +219,7 @@ function handleMultipleInputs (inputs) {
     }
   })
 
-  // enableQuiet()
+  enableQuiet()
 }
 
 function runVersion () {
