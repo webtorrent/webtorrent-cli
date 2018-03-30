@@ -157,7 +157,7 @@ var playerName = argv.airplay ? 'Airplay'
                   : null
 
 var command = argv._[0]
-
+var num_torrents
 if (['info', 'create', 'download', 'add', 'seed'].indexOf(command) !== -1 && argv._.length === 1) {
   runHelp()
 } else if (command === 'help' || argv.help) {
@@ -181,6 +181,7 @@ if (['info', 'create', 'download', 'add', 'seed'].indexOf(command) !== -1 && arg
 } else if (command === 'download' || command === 'add') {
   let torrentIds = argv._.slice(1)
   if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
+  num_torrents = torrentIds.length
   torrentIds.forEach(function (torrentId) {
     runDownload(torrentId)
   })
@@ -194,6 +195,7 @@ if (['info', 'create', 'download', 'add', 'seed'].indexOf(command) !== -1 && arg
   // assume command is "download" when not specified
   let torrentIds = argv._
   if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
+  num_torrents = torrentIds.length
   torrentIds.forEach(function (torrentId) {
     runDownload(torrentId)
   })
@@ -217,7 +219,7 @@ function handleMultipleInputs (inputs) {
     }
   })
 
-  enableQuiet()
+  // enableQuiet()
 }
 
 function runVersion () {
@@ -342,7 +344,6 @@ function runDownload (torrentId) {
   client.on('error', fatalError)
 
   var torrent = client.add(torrentId, { path: argv.out, announce: argv.announce })
-
   torrent.on('infoHash', function () {
     if (argv.quiet) return
     updateMetadata()
@@ -366,6 +367,7 @@ function runDownload (torrentId) {
   })
 
   torrent.on('done', function () {
+    num_torrents-=1
     if (!argv.quiet) {
       var numActiveWires = torrent.wires.reduce(function (num, wire) {
         return num + (wire.downloaded > 0)
@@ -379,7 +381,7 @@ function runDownload (torrentId) {
         getRuntime()
       )
     }
-    torrentDone()
+    torrentDone(this)
   })
 
   // Start http server
@@ -418,12 +420,14 @@ function runDownload (torrentId) {
     }
 
     // if no index specified, use largest file
-    var index = (typeof argv.select === 'number')
-      ? argv.select
-      : torrent.files.indexOf(torrent.files.reduce(function (a, b) {
-        return a.length > b.length ? a : b
-      }))
-    onSelection(index)
+    if (!typeof argv.select=="undefined"){
+      var index = (typeof argv.select === 'number')
+        ? argv.select
+        : torrent.files.indexOf(torrent.files.reduce(function (a, b) {
+          return a.length > b.length ? a : b
+        }))
+      onSelection(index)
+    }
   }
 
   function onSelection (index) {
@@ -668,9 +672,13 @@ function drawTorrent (torrent) {
   }
 }
 
-function torrentDone () {
+function torrentDone (torrent) {
   if (argv['on-done']) unref(cp.exec(argv['on-done']))
-  if (!playerName && !serving && argv.out && !argv['keep-seeding']) gracefulExit()
+  if (!playerName && !serving && argv.out && !argv['keep-seeding'] && !num_torrents) {
+    gracefulExit()
+  }else if (!argv['keep-seeding']){
+    torrent.client.destroy()
+  }
 }
 
 function fatalError (err) {
