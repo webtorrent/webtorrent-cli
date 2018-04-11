@@ -67,6 +67,7 @@ Example:
 
 Commands:
     download <torrent-id>   Download a torrent
+    downloadmeta <torrent-id>   Download the .torrent file from a magnet link
     seed <file/folder>      Seed a file or folder
     create <file>           Create a .torrent file
     info <torrent-id>       Show info for a .torrent file or magnet uri
