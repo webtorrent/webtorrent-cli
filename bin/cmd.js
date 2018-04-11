@@ -184,6 +184,12 @@ if (['info', 'create', 'download', 'add', 'seed'].indexOf(command) !== -1 && arg
   torrentIds.forEach(function (torrentId) {
     runDownload(torrentId)
   })
+} else if (command === 'downloadmeta' ){
+  let torrentIds = argv._.slice(1)
+  if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
+  torrentIds.forEach(function (torrentId) {
+    runDownloadMeta(torrentId)
+  })
 } else if (command === 'seed') {
   let inputs = argv._.slice(1)
   if (inputs.length > 1) handleMultipleInputs(inputs)
@@ -244,6 +250,7 @@ Example:
 
 Commands:
     download <torrent-id...>  Download a torrent
+    downloadmeta <torrent-id...> Download torrent metafile and save it usually from magnet link
     seed <file/folder...>     Seed a file or folder
     create <file/folder>      Create a .torrent file
     info <torrent-id>         Show info for a .torrent file or magnet uri
@@ -531,6 +538,42 @@ function runDownload (torrentId) {
 
     drawTorrent(torrent)
   }
+}
+
+function runDownloadMeta (torrentId) {
+  if (!argv.out && !argv.stdout) {
+    argv.out = process.cwd()
+  }
+  client = new WebTorrent({ blocklist: argv.blocklist })
+  client.on('error', fatalError)
+
+  var torrent = client.add(torrentId, { path: argv.out, announce: argv.announce })
+
+  torrent.on('infoHash', function () {
+    const torrentFilePath = argv.out + "/" + this.infoHash+".torrent"  
+
+    if (argv.quiet) return
+    updateMetadata()
+    torrent.on('wire', updateMetadata)
+
+    function updateMetadata () {
+      clivas.clear()
+      clivas.line(
+        '{green:fetching torrent metadata from} {bold:%s} {green:peers}',
+        torrent.numPeers
+      )
+    }
+
+    torrent.on('metadata', function () {
+      clivas.clear()
+      torrent.removeListener('wire', updateMetadata)
+
+      clivas.clear()
+      clivas.line(`{green:saving the .torrent file data to ${torrentFilePath} ..}`)
+      fs.writeFileSync(torrentFilePath, this.torrentFile)
+      gracefulExit()
+    })
+  });
 }
 
 function runSeed (input) {
