@@ -184,7 +184,7 @@ if (['info', 'create', 'download', 'add', 'seed'].indexOf(command) !== -1 && arg
   torrentIds.forEach(function (torrentId) {
     runDownload(torrentId)
   })
-} else if (command === 'downloadmeta' ){
+} else if (command === 'downloadmeta') {
   let torrentIds = argv._.slice(1)
   if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
   torrentIds.forEach(function (torrentId) {
@@ -550,7 +550,7 @@ function runDownloadMeta (torrentId) {
   var torrent = client.add(torrentId, { path: argv.out, announce: argv.announce })
 
   torrent.on('infoHash', function () {
-    const torrentFilePath = argv.out + "/" + this.infoHash+".torrent"  
+    const torrentFilePath = argv.out + '/' + this.infoHash + '.torrent'
 
     if (argv.quiet) return
     updateMetadata()
@@ -573,7 +573,7 @@ function runDownloadMeta (torrentId) {
       fs.writeFileSync(torrentFilePath, this.torrentFile)
       gracefulExit()
     })
-  });
+  })
 }
 
 function runSeed (input) {
