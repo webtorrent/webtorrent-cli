@@ -18,6 +18,7 @@ var path = require('path')
 var prettierBytes = require('prettier-bytes')
 var vlcCommand = require('vlc-command')
 var WebTorrent = require('webtorrent')
+var MemoryChunkStore = require('memory-chunk-store')
 
 process.title = 'WebTorrent'
 
@@ -547,7 +548,7 @@ function runDownloadMeta (torrentId) {
   client = new WebTorrent({ blocklist: argv.blocklist })
   client.on('error', fatalError)
 
-  var torrent = client.add(torrentId, { path: argv.out, announce: argv.announce })
+  var torrent = client.add(torrentId, { store: MemoryChunkStore, announce: argv.announce })
 
   torrent.on('infoHash', function () {
     const torrentFilePath = argv.out + '/' + this.infoHash + '.torrent'
