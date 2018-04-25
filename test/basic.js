@@ -6,7 +6,7 @@ var path = require('path')
 var spawn = require('cross-spawn-async')
 var test = require('tape')
 
-var CMD_PATH = path.resolve(__dirname, 'bin', 'cmd.js')
+var CMD_PATH = path.resolve(__dirname, '..', 'bin', 'cmd.js')
 var CMD = 'node ' + CMD_PATH
 
 test('Command line: webtorrent help', function (t) {
@@ -30,7 +30,7 @@ test('Command line: webtorrent help', function (t) {
 
 test('Command line: webtorrent version', function (t) {
   t.plan(6)
-  var expectedVersion = require('./package.json').version + '\n'
+  var expectedVersion = require('../package.json').version + '\n'
 
   cp.exec(CMD + ' version', function (err, data) {
     t.error(err)
