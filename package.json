@@ -66,6 +66,6 @@
   },
   "scripts": {
     "test": "standard && tape test/*.js",
-    "update-authors": "./bin/update-authors.sh"
+    "update-authors": "./scripts/update-authors.sh"
   }
 }
