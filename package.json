@@ -65,7 +65,7 @@
     "url": "git://github.com/webtorrent/webtorrent-cli.git"
   },
   "scripts": {
-    "test": "standard && tape test.js",
+    "test": "standard && tape test/*.js",
     "update-authors": "./bin/update-authors.sh"
   }
 }
