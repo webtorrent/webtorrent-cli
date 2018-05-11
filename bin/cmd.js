@@ -455,7 +455,8 @@ function runDownload (torrentId) {
 
     function openPlayer (cmd) {
       unref(cp.exec(cmd, function (err) {
-        if (err) return fatalError(err)
+        // Code 4 is returned by MPV when quiting
+        if (err && err.code !== 4) return fatalError(err)
       }).on('exit', playerExit))
     }
 
@@ -688,7 +689,7 @@ function gracefulExit () {
   process.removeListener('SIGINT', gracefulExit)
   process.removeListener('SIGTERM', gracefulExit)
 
-  if (!client) return
+  if (!client || client.destroyed) return
 
   if (subtitlesServer) {
     subtitlesServer.close()
