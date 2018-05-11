@@ -688,7 +688,7 @@ function gracefulExit () {
   process.removeListener('SIGINT', gracefulExit)
   process.removeListener('SIGTERM', gracefulExit)
 
-  if (!client) return
+  if (!client || client.destroyed) return
 
   if (subtitlesServer) {
     subtitlesServer.close()
