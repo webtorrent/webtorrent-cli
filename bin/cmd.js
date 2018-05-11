@@ -455,7 +455,8 @@ function runDownload (torrentId) {
 
     function openPlayer (cmd) {
       unref(cp.exec(cmd, function (err) {
-        if (err) return fatalError(err)
+        // Code 4 is returned by MPV when quiting
+        if (err && err.code !== 4) return fatalError(err)
       }).on('exit', playerExit))
     }
 
