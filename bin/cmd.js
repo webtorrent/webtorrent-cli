@@ -476,9 +476,11 @@ function runDownload (torrentId) {
 
     function openVLCWin32 (vlcCommand) {
       var args = [].concat(href, VLC_ARGS.split(' '))
-      unref(cp.execFile(vlcCommand, args, function (err) {
+      cp.execFile(vlcCommand, args, function (err) {
         if (err) return fatalError(err)
-      }).on('exit', playerExit))
+      })
+        .on('exit', playerExit)
+        .unref()
     }
 
     function playerExit () {
@@ -607,7 +609,7 @@ function drawTorrent (torrent) {
   if (!argv.quiet) {
     process.stdout.write(Buffer.from('G1tIG1sySg==', 'base64')) // clear for drawing
     drawInterval = setInterval(draw, 1000)
-    unref(drawInterval)
+    drawInterval.unref()
   }
 
   var hotswaps = 0
@@ -720,8 +722,12 @@ function drawTorrent (torrent) {
 }
 
 function torrentDone () {
-  if (argv['on-done']) unref(cp.exec(argv['on-done']))
-  if (!playerName && !serving && argv.out && !argv['keep-seeding']) gracefulExit()
+  if (argv['on-done']) {
+    cp.exec(argv['on-done']).unref()
+  }
+  if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
+    gracefulExit()
+  }
 }
 
 function fatalError (err) {
@@ -739,6 +745,8 @@ function gracefulExit () {
   if (gracefullyExiting) return
   gracefullyExiting = true
 
+  clivas.line('\n{green:webtorrent is exiting...}')
+
   process.removeListener('SIGINT', gracefulExit)
   process.removeListener('SIGTERM', gracefulExit)
 
@@ -748,21 +756,17 @@ function gracefulExit () {
     subtitlesServer.close()
   }
 
-  clivas.line('\n{green:webtorrent is exiting...}')
-
   clearInterval(drawInterval)
 
-  if (argv['on-exit']) unref(cp.exec(argv['on-exit']))
+  if (argv['on-exit']) {
+    cp.exec(argv['on-exit']).unref()
+  }
 
   client.destroy(function (err) {
     if (err) return fatalError(err)
 
     // Quit after 1 second. This is only necessary for `webtorrent-hybrid` since
     // the `electron-webrtc` keeps the node process alive quit.
-    unref(setTimeout(function () { process.exit(0) }, 1000))
+    setTimeout(function () { process.exit(0) }, 1000).unref()
   })
-}
-
-function unref (iv) {
-  if (iv && typeof iv.unref === 'function') iv.unref()
 }
