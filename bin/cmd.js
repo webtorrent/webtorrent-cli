@@ -464,9 +464,14 @@ function runDownload (torrentId) {
     }
 
     function openPlayer (cmd) {
-      unref(cp.exec(cmd, function (err) {
-        if (err) return fatalError(err)
-      }).on('exit', playerExit))
+      cp.exec(cmd, function (err) {
+        if (err) {
+          var isMpvFalseError = playerName === 'mpv' && err.code === 4
+          if (!isMpvFalseError) return fatalError(err)
+        }
+      })
+        .on('exit', playerExit)
+        .unref()
     }
 
     function openVLCWin32 (vlcCommand) {
