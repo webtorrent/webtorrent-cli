@@ -1,4 +1,4 @@
 .travis.yml
 CONTRIBUTING.md
-scripts/
+tools/
 test/
