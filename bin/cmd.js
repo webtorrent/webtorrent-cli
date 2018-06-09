@@ -354,7 +354,9 @@ function runDownload (torrentId) {
   var torrent = client.add(torrentId, { path: argv.out, announce: argv.announce })
 
   torrent.on('infoHash', function () {
-    torrent.so = argv.select.toString()
+    if ('select' in argv) {
+      torrent.so = argv.select.toString()
+    }
     if (argv.quiet) return
     updateMetadata()
     torrent.on('wire', updateMetadata)
