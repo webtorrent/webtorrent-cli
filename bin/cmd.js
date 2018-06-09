@@ -12,7 +12,7 @@ var mime = require('mime')
 var minimist = require('minimist')
 var moment = require('moment')
 var networkAddress = require('network-address')
-var open = require('open')
+var opn = require('opn')
 var parseTorrent = require('parse-torrent')
 var path = require('path')
 var prettierBytes = require('prettier-bytes')
@@ -457,7 +457,7 @@ function runDownload (torrentId) {
         }
       })
     } else if (argv.iina) {
-      open('iina://weblink?url=' + href)
+      opn('iina://weblink?url=' + href)
     } else if (argv.mplayer) {
       openPlayer(MPLAYER_EXEC + ' ' + href)
     } else if (argv.mpv) {
