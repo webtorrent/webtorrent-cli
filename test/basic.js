@@ -5,6 +5,7 @@ var parseTorrent = require('parse-torrent')
 var path = require('path')
 var spawn = require('cross-spawn-async')
 var test = require('tape')
+var fs = require('fs')
 
 var CMD_PATH = path.resolve(__dirname, '..', 'bin', 'cmd.js')
 var CMD = 'node ' + CMD_PATH
@@ -105,5 +106,21 @@ test('Command line: webtorrent download <torrent file> (with local content)', fu
   cp.exec(CMD + ' download ' + fixtures.leaves.torrentPath + ' --out ' + fixturesPath, function (err, data) {
     t.error(err)
     t.ok(data.indexOf('successfully') !== -1)
+  })
+})
+
+test('Command line: webtorrent downloadmeta <torrent-id>', function (t) {
+  t.plan(2)
+
+  const fixturesPath = path.join(path.dirname(require.resolve('webtorrent-fixtures')), 'fixtures')
+
+  cp.exec(`${CMD} downloadmeta '${fixtures.sintel.magnetURI}' --out ${fixturesPath}`, function (err, data) {
+    t.error(err)
+    let parsedTorrent = parseTorrent(fs.readFileSync(fixturesPath + '/' + fixtures.sintel.parsedTorrent.infoHash + '.torrent'))
+    // Sintel torrent file contain two fields not availaible from the DHT
+    let expectedTorrent = fixtures.sintel.parsedTorrent
+    delete expectedTorrent.created
+    delete expectedTorrent.createdBy
+    t.deepEqual(parsedTorrent, expectedTorrent)
   })
 })
