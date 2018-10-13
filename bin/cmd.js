@@ -61,6 +61,7 @@ var argv = minimist(process.argv.slice(2), {
     'chromecast',
     'mplayer',
     'mpv',
+    'pip',
     'not-on-top',
     'vlc',
     'iina',
@@ -103,6 +104,7 @@ var VLC_ARGS = '--play-and-exit --quiet'
 if (process.env.DEBUG) {
   VLC_ARGS += ' --extraintf=http:logger --verbose=2 --file-logging --logfile=vlc-log.txt'
 }
+var IINA_EXEC = '/Applications/IINA.app/Contents/MacOS/iina-cli --keep-running'
 var MPLAYER_EXEC = 'mplayer -really-quiet -noidx -loop 0'
 var MPV_EXEC = 'mpv --really-quiet --loop=no'
 var OMX_EXEC = 'lxterminal -e omxplayer -r --timeout 60 --no-ghost-box --align center -o ' + (typeof argv.omx === 'string' ? argv.omx : 'hdmi')
@@ -124,6 +126,7 @@ if (argv.subtitles) {
 
 if (!argv['not-on-top']) {
   VLC_ARGS += ' --video-on-top'
+  IINA_EXEC += ' --pip'
   MPLAYER_EXEC += ' -ontop'
   MPV_EXEC += ' --ontop'
 }
@@ -287,6 +290,7 @@ Options (advanced):
     -b, --blocklist [path]    load blocklist file/http url
     -a, --announce [url]      tracker URL to announce to
     -q, --quiet               don't show UI on stdout
+    --pip                     enter Picture-in-Picture if supported by the player
     --not-on-top              don't set "always on top" option in player
     --keep-seeding            don't quit when done downloading
     --no-quit                 don't quit when player exits
@@ -457,7 +461,7 @@ function runDownload (torrentId) {
         }
       })
     } else if (argv.iina) {
-      opn('iina://weblink?url=' + href)
+      openIINA(IINA_EXEC + ' ' + href, 'iina://weblink?url=' + href)
     } else if (argv.mplayer) {
       openPlayer(MPLAYER_EXEC + ' ' + href)
     } else if (argv.mpv) {
@@ -475,6 +479,14 @@ function runDownload (torrentId) {
       })
         .on('exit', playerExit)
         .unref()
+    }
+
+    function openIINA (cmd, href) {
+      cp.exec(cmd, function (err) {
+        open(href);
+      })
+        .on('exit', playerExit)
+        .unref ()
     }
 
     function openVLCWin32 (vlcCommand) {
