@@ -75,7 +75,8 @@ const argv = minimist(process.argv.slice(2), {
     'blocklist',
     'subtitles',
     'on-done',
-    'on-exit'
+    'on-exit',
+    'chromecast'
   ],
   default: {
     port: 8000,
@@ -278,16 +279,17 @@ function runHelp () {
     * info hash (hex string)
 
     Options (streaming):
-    --airplay                 Apple TV
-    --chromecast              Chromecast
-    --dlna                    DLNA
-    --mplayer                 MPlayer
-    --mpv                     MPV
-    --omx [jack]              omx [default: hdmi]
-    --vlc                     VLC
-    --iina                    IINA
-    --xbmc                    XBMC
-    --stdout                  standard out (implies --quiet)
+    --airplay                                   Apple TV
+    --chromecast                                Chromecast
+    --chromecast="Livingroom TV","Bedroom TV"   Only selected chromecast devices
+    --dlna                                      DLNA
+    --mplayer                                   MPlayer
+    --mpv                                       MPV
+    --omx [jack]                                omx [default: hdmi]
+    --vlc                                       VLC
+    --iina                                      IINA
+    --xbmc                                      XBMC
+    --stdout                                    standard out (implies --quiet)
 
     Options (simple):
     -o, --out [path]          set download destination [default: current directory]
@@ -532,18 +534,29 @@ function runDownload (torrentId) {
         .start()
     }
 
-    if (argv.chromecast) {
+    // If passed without arguments, it's still a string.
+    if (typeof argv.chromecast === 'string') {
       const chromecasts = require('chromecasts')()
+      const selectedChromecasts = argv.chromecast.split(',').filter((arg) => arg !== '')
 
       chromecasts.on('update', player => {
-        player.play(href, {
-          title: `WebTorrent - ${torrent.files[index].name}`
-        })
+        const isSelectedChromecast = (name) => name.toLowerCase() === player.name.toLowerCase()
 
-        player.on('error', err => {
-          err.message = `Chromecast: ${err.message}`
-          errorAndExit(err)
-        })
+        if (
+          // If there are no named chromecasts supplied, play on all devices
+          selectedChromecasts.length === 0 ||
+          // If there are named chromecasts, check if this is one of them
+          selectedChromecasts.find(isSelectedChromecast)
+        ) {
+          player.play(href, {
+            title: `WebTorrent - ${torrent.files[index].name}`
+          })
+
+          player.on('error', err => {
+            err.message = `Chromecast: ${err.message}`
+            errorAndExit(err)
+          })
+        }
       })
     }
 
