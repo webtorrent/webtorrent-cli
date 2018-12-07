@@ -516,10 +516,10 @@ function runDownload (torrentId) {
     }
 
     function openIINA (cmd, href) {
-      cp.exec(cmd, err => {
-        opn(href);
+      cp.exec(cmd, () => {
+        opn(href)
       }).on('exit', playerExit)
-        .unref ()
+        .unref()
     }
 
     function openVLCWin32 (vlcCommand) {
