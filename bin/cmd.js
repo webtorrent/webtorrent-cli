@@ -75,7 +75,11 @@ const argv = minimist(process.argv.slice(2), {
     'blocklist',
     'subtitles',
     'on-done',
-    'on-exit'
+    'on-exit',
+    'mplayer-args',
+    'mpv-args',
+    'omx-args',
+    'vlc-args'
   ],
   default: {
     port: 8000,
@@ -124,6 +128,22 @@ if (!argv['not-on-top']) {
   VLC_ARGS += ' --video-on-top'
   MPLAYER_EXEC += ' -ontop'
   MPV_EXEC += ' --ontop'
+}
+
+if (argv.mplayer && argv['mplayer-args']) {
+  MPLAYER_EXEC += ' ' + argv['mplayer-args']
+}
+
+if (argv.vlc && argv['vlc-args']) {
+  VLC_ARGS += ' ' + argv['vlc-args']
+}
+
+if (argv.mpv && argv['mpv-args']) {
+  MPV_EXEC += ' ' + argv['mpv-args']
+}
+
+if (argv.omx && argv['omx-args']) {
+  OMX_EXEC += ' ' + argv['omx-args']
 }
 
 function checkPermission (filename) {
@@ -288,6 +308,11 @@ function runHelp () {
     --iina                    IINA
     --xbmc                    XBMC
     --stdout                  standard out (implies --quiet)
+
+    --mplayer-args [args]     Extra arguments passed to the MPlayer executable
+    --mpv-args [args]         Extra arguments passed to the MPV executable
+    --omx-args [args]         Extra arguments passed to the omxplayer executable
+    --vlc-args [args]         Extra arguments passed to the VLC executable
 
     Options (simple):
     -o, --out [path]          set download destination [default: current directory]
