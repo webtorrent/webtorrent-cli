@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "clivas": "^0.2.0",
-    "create-torrent": "^3.23.1",
+    "create-torrent": "^4.0.0",
     "dlnacasts": "^0.1.0",
     "ecstatic": "^4.0.0",
     "executable": "^4.0.0",
