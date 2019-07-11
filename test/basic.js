@@ -84,7 +84,7 @@ test('Command line: webtorrent info magnet_uri', t => {
 test('Command line: webtorrent create /path/to/file', t => {
   t.plan(1)
 
-  const child = spawn('node', [ CMD_PATH, 'create', fixtures.leaves.contentPath ])
+  const child = spawn('node', [CMD_PATH, 'create', fixtures.leaves.contentPath])
   child.on('error', err => { t.fail(err) })
 
   const chunks = []
@@ -116,9 +116,9 @@ test('Command line: webtorrent downloadmeta <torrent-id>', t => {
 
   cp.exec(`${CMD} downloadmeta '${fixtures.sintel.magnetURI}' --out ${fixturesPath}`, (err, data) => {
     t.error(err)
-    let parsedTorrent = parseTorrent(fs.readFileSync(`${fixturesPath}/${fixtures.sintel.parsedTorrent.infoHash}.torrent`))
+    const parsedTorrent = parseTorrent(fs.readFileSync(`${fixturesPath}/${fixtures.sintel.parsedTorrent.infoHash}.torrent`))
     // Sintel torrent file contain two fields not availaible from the DHT
-    let expectedTorrent = fixtures.sintel.parsedTorrent
+    const expectedTorrent = fixtures.sintel.parsedTorrent
     delete expectedTorrent.created
     delete expectedTorrent.createdBy
     t.deepEqual(parsedTorrent, expectedTorrent)

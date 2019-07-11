@@ -186,18 +186,18 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
   if (argv._.length !== 2) {
     runHelp()
   } else {
-    let torrentId = argv._[1]
+    const torrentId = argv._[1]
     runInfo(torrentId)
   }
 } else if (command === 'create') {
   if (argv._.length !== 2) {
     runHelp()
   } else {
-    let input = argv._[1]
+    const input = argv._[1]
     runCreate(input)
   }
 } else if (command === 'download' || command === 'add') {
-  let torrentIds = argv._.slice(1)
+  const torrentIds = argv._.slice(1)
 
   if (torrentIds.length > 1) {
     handleMultipleInputs(torrentIds)
@@ -205,7 +205,7 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
 
   torrentIds.forEach(torrentId => runDownload(torrentId))
 } else if (command === 'downloadmeta') {
-  let torrentIds = argv._.slice(1)
+  const torrentIds = argv._.slice(1)
 
   if (torrentIds.length > 1) {
     handleMultipleInputs(torrentIds)
@@ -213,7 +213,7 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
 
   torrentIds.forEach(torrentId => runDownloadMeta(torrentId))
 } else if (command === 'seed') {
-  let inputs = argv._.slice(1)
+  const inputs = argv._.slice(1)
 
   if (inputs.length > 1) {
     handleMultipleInputs(inputs)
@@ -222,7 +222,7 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
   inputs.forEach(input => runSeed(input))
 } else if (command) {
   // assume command is "download" when not specified
-  let torrentIds = argv._
+  const torrentIds = argv._
 
   if (torrentIds.length > 1) {
     handleMultipleInputs(torrentIds)
@@ -236,7 +236,7 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
 function handleMultipleInputs (inputs) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
-  let invalidArguments = [
+  const invalidArguments = [
     'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
     'stdout', 'select', 'subtitles'
   ]
