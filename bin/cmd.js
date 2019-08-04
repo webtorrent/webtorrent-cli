@@ -12,7 +12,7 @@ const mime = require('mime')
 const minimist = require('minimist')
 const moment = require('moment')
 const networkAddress = require('network-address')
-const opn = require('opn')
+const open = require('open')
 const parseTorrent = require('parse-torrent')
 const path = require('path')
 const MemoryChunkStore = require('memory-chunk-store')
@@ -519,7 +519,7 @@ function runDownload (torrentId) {
 
     function openIINA (cmd, href) {
       cp.exec(cmd, () => {
-        opn(href)
+        open(href)
       }).on('exit', playerExit)
         .unref()
     }
