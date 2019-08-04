@@ -3,7 +3,7 @@ const extend = require('xtend')
 const fixtures = require('webtorrent-fixtures')
 const parseTorrent = require('parse-torrent')
 const path = require('path')
-const spawn = require('cross-spawn-async')
+const spawn = require('cross-spawn')
 const test = require('tape')
 const fs = require('fs')
 
