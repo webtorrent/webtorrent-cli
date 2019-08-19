@@ -535,7 +535,7 @@ function runDownload (torrentId) {
     }
 
     function playerExit () {
-      if (argv['quit']) {
+      if (argv.quit) {
         gracefulExit()
       }
     }
