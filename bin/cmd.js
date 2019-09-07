@@ -470,8 +470,10 @@ function runDownload (torrentId) {
 
   function onSelection (index) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
-      ? `http://${networkAddress()}:${server.address().port}/${index}`
-      : `http://localhost:${server.address().port}/${index}`
+      ? `http://${networkAddress()}:${server.address().port}`
+      : `http://localhost:${server.address().port}`
+
+    href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
 
     if (playerName) {
       torrent.files[index].select()
@@ -480,8 +482,6 @@ function runDownload (torrentId) {
     if (argv.stdout) {
       torrent.files[index].createReadStream().pipe(process.stdout)
     }
-
-    href = href + '/' + torrent.infoHash + '/' + encodeURIComponent(torrent.files[index].name)
 
     if (argv.vlc) {
       vlcCommand((err, vlcCmd) => {
