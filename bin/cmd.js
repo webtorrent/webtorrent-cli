@@ -136,10 +136,10 @@ if (!argv['not-on-top']) {
 function checkPermission (filename) {
   try {
     if (!executable.sync(filename)) {
-      errorAndExit(`Script "${filename}" is not executable`)
+      return errorAndExit(`Script "${filename}" is not executable`)
     }
   } catch (err) {
-    errorAndExit(`Script "${filename}" does not exist`)
+    return errorAndExit(`Script "${filename}" does not exist`)
   }
 }
 
@@ -244,7 +244,7 @@ function handleMultipleInputs (inputs) {
 
   invalidArguments.forEach(arg => {
     if (argv[arg]) {
-      errorAndExit(new Error(
+      return errorAndExit(new Error(
         `The --${arg} argument cannot be used with multiple files/folders.`
       ))
     }
@@ -436,7 +436,7 @@ function runDownload (torrentId) {
         return server.listen(0, initServer)
       }
 
-      fatalError(err)
+      return fatalError(err)
     })
 
   server.once('connection', () => (serving = true))
@@ -462,7 +462,7 @@ function runDownload (torrentId) {
       : torrent.files.indexOf(torrent.files.reduce((a, b) => a.length > b.length ? a : b))
 
     if (!torrent.files[index]) {
-      errorAndExit(`There's no file that maps to index ${index}`)
+      return errorAndExit(`There's no file that maps to index ${index}`)
     }
 
     onSelection(index)
@@ -558,7 +558,7 @@ function runDownload (torrentId) {
 
         player.on('error', err => {
           err.message = `Chromecast: ${err.message}`
-          errorAndExit(err)
+          return errorAndExit(err)
         })
       })
     }
