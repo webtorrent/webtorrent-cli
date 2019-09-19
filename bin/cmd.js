@@ -559,8 +559,8 @@ function runDownload (torrentId) {
       if (argv.subtitles) {
         const path = require('path')
         subtitlesServer.listen(0)
-        opts['subtitles'] = [`http://${networkAddress()}:${subtitlesServer.address().port}/${encodeURIComponent(path.basename(argv.subtitles))}`]
-        opts['autoSubtitles'] = true
+        opts.subtitles = [`http://${networkAddress()}:${subtitlesServer.address().port}/${encodeURIComponent(path.basename(argv.subtitles))}`]
+        opts.autoSubtitles = true
       }
 
       chromecasts.on('update', player => {
