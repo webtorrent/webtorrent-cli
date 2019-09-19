@@ -119,7 +119,8 @@ if (argv.subtitles) {
 
   subtitlesServer = http.createServer(ecstatic({
     root: path.dirname(argv.subtitles),
-    showDir: false
+    showDir: false,
+    cors: true
   }))
 }
 
@@ -551,10 +552,19 @@ function runDownload (torrentId) {
     if (argv.chromecast) {
       const chromecasts = require('chromecasts')()
 
+      var opts = {
+        title: `WebTorrent - ${torrent.files[index].name}`
+      }
+
+      if (argv.subtitles) {
+        const path = require('path')
+        subtitlesServer.listen(0)
+        opts['subtitles'] = [`http://${networkAddress()}:${subtitlesServer.address().port}/${encodeURIComponent(path.basename(argv.subtitles))}`]
+        opts['autoSubtitles'] = true
+      }
+
       chromecasts.on('update', player => {
-        player.play(href, {
-          title: `WebTorrent - ${torrent.files[index].name}`
-        })
+        player.play(href, opts)
 
         player.on('error', err => {
           err.message = `Chromecast: ${err.message}`
