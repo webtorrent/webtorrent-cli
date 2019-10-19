@@ -519,7 +519,7 @@ function runDownload (torrentId) {
 
     function openIINA (cmd, href) {
       cp.exec(cmd, () => {
-        open(href)
+        open(href, { url: true })
       }).on('exit', playerExit)
         .unref()
     }
