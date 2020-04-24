@@ -34,7 +34,7 @@
   "devDependencies": {
     "cross-spawn": "^7.0.0",
     "standard": "*",
-    "tape": "^4.5.1",
+    "tape": "^5.0.0",
     "webtorrent-fixtures": "^1.2.0",
     "xtend": "^4.0.1"
   },
