@@ -308,7 +308,7 @@ function runHelp () {
       -b, --blocklist [path]    load blocklist file/http url
       -a, --announce [url]      tracker URL to announce to
       -q, --quiet               don't show UI on stdout
-      --torrentPort [number]    change the torrent seeding port [default: random]
+      --torrent-port [number]    change the torrent seeding port [default: random]
       --dhtPort [number]        change the dht port [default: random]
       --pip                     enter Picture-in-Picture if supported by the player
       --not-on-top              don't set "always on top" option in player
