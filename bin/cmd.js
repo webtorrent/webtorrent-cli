@@ -309,7 +309,7 @@ function runHelp () {
       -a, --announce [url]      tracker URL to announce to
       -q, --quiet               don't show UI on stdout
       --torrent-port [number]    change the torrent seeding port [default: random]
-      --dhtPort [number]        change the dht port [default: random]
+      --dht-port [number]        change the dht port [default: random]
       --pip                     enter Picture-in-Picture if supported by the player
       --not-on-top              don't set "always on top" option in player
       --keep-seeding            don't quit when done downloading
