@@ -3,7 +3,7 @@
   "description": "WebTorrent, the streaming torrent client. For the command line.",
   "version": "3.0.6",
   "author": {
-    "name": "WebTorrent, LLC",
+    "name": "WebTorrent LLC",
     "email": "feross@webtorrent.io",
     "url": "https://webtorrent.io"
   },
@@ -68,5 +68,19 @@
   "scripts": {
     "test": "standard && tape test/*.js",
     "update-authors": "./tools/update-authors.sh"
-  }
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/feross"
+    },
+    {
+      "type": "patreon",
+      "url": "https://www.patreon.com/feross"
+    },
+    {
+      "type": "consulting",
+      "url": "https://feross.org/support"
+    }
+  ]
 }
