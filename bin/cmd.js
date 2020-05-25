@@ -496,17 +496,17 @@ function runDownload (torrentId) {
         if (process.platform === 'win32') {
           openVLCWin32(vlcCmd)
         } else {
-          openPlayer(`${vlcCmd} ${href} ${VLC_ARGS}`)
+          openPlayer(`${vlcCmd} "${href}" ${VLC_ARGS}`)
         }
       })
     } else if (argv.iina) {
-      openIINA(`${IINA_EXEC} ${href}`, `iina://weblink?url=${href}`)
+      openIINA(`${IINA_EXEC} "${href}"`, `iina://weblink?url=${href}`)
     } else if (argv.mplayer) {
-      openPlayer(`${MPLAYER_EXEC} ${href}`)
+      openPlayer(`${MPLAYER_EXEC} "${href}"`)
     } else if (argv.mpv) {
-      openPlayer(`${MPV_EXEC} ${href}`)
+      openPlayer(`${MPV_EXEC} "${href}"`)
     } else if (argv.omx) {
-      openPlayer(`${OMX_EXEC} ${href}`)
+      openPlayer(`${OMX_EXEC} "${href}"`)
     }
 
     function openPlayer (cmd) {
