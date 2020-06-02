@@ -20,6 +20,7 @@ const prettierBytes = require('prettier-bytes')
 const stripIndent = require('common-tags/lib/stripIndent')
 const vlcCommand = require('vlc-command')
 const WebTorrent = require('webtorrent')
+const srt2vtt = require('srt-to-vtt')
 
 const { version: webTorrentCliVersion } = require('../package.json')
 const { version: webTorrentVersion } = require('webtorrent/package.json')
@@ -103,24 +104,24 @@ if (process.env.DEBUG) {
   VLC_ARGS += ' --extraintf=http:logger --verbose=2 --file-logging --logfile=vlc-log.txt'
 }
 
-let IINA_EXEC = '/Applications/IINA.app/Contents/MacOS/iina-cli --keep-running'
-let MPLAYER_EXEC = 'mplayer -really-quiet -noidx -loop 0'
-let MPV_EXEC = 'mpv --really-quiet --loop=no'
-let OMX_EXEC = `lxterminal -e omxplayer -r --timeout 60 --no-ghost-box --align center -o ${typeof argv.omx === 'string' ? argv.omx : 'hdmi'}`
+let IINA_EXEC = '/Applications/IINA.app/Contents/MacOS/iina-cli --keep-running';
+let MPLAYER_EXEC = 'mplayer -really-quiet -noidx -loop 0';
+let MPV_EXEC = 'mpv --really-quiet --loop=no';
+let OMX_EXEC = `lxterminal -e omxplayer -r --timeout 60 --no-ghost-box --align center -o ${typeof argv.omx === 'string' ? argv.omx : 'hdmi'}`;
+let subtitles = {}
 
-let subtitlesServer
 if (argv.subtitles) {
-  const subtitles = JSON.stringify(argv.subtitles)
-
-  VLC_ARGS += ` --sub-file=${subtitles}`
-  MPLAYER_EXEC += ` -sub ${subtitles}`
-  MPV_EXEC += ` --sub-file=${subtitles}`
-  OMX_EXEC += ` --subtitles ${subtitles}`
-
-  subtitlesServer = http.createServer(ecstatic({
-    root: path.dirname(argv.subtitles),
-    showDir: false
-  }))
+  let subtitleFile = argv.subtitles
+  // Load the subtitles as usual
+  loadSubtitles(subtitleFile)
+  // Chromecast does not accept SubRip (.srt) subtitles
+  // Create a VTT file and load it as subtitles
+  // convertSrtToVtt() checks for existing .vtt file with same filename  
+  if (argv.chromecast && path.extname(subtitleFile) == '.srt') {
+    subtitleFile = convertSrtToVtt()
+    loadSubtitles(subtitleFile)
+    startSubtitlesServer()
+  }
 }
 
 if (argv.pip) {
@@ -251,6 +252,61 @@ function handleMultipleInputs (inputs) {
   })
 
   enableQuiet()
+}
+
+function convertSrtToVtt() {
+  let vttFilename = path.join(subtitles.directory, path.basename(subtitles.basename, '.srt') + '.vtt');
+  try {
+    // Check if the vtt file already exists and return the filename
+    fs.accessSync(vttFilename, fs.constants.R_OK);
+    return vttFilename;
+  }
+  catch {
+    // Create the vtt file if it doesn't exist and return the filename
+    fs.createReadStream(subtitles.file)
+    .pipe(srt2vtt())
+    .pipe(fs.createWriteStream(vttFilename))
+    return vttFilename;
+  }    
+}
+
+function loadSubtitles(subtitlePath) {
+  // Create a subtitle object containing all related properties
+  // Some properties are assigned null for later use
+  let sub = path.resolve(subtitlePath);
+  try {    
+    fs.accessSync(sub);
+    subtitles = {
+      file: sub, 
+      quotedname: JSON.stringify(sub),
+      directory: path.resolve(path.dirname(sub)), 
+      basename: path.basename(sub), 
+      href: null, 
+      error: null,
+      server: null
+    }  
+    
+    VLC_ARGS += ` --sub-file=${subtitles.quotedname}`
+    MPLAYER_EXEC += ` -sub ${subtitles.quotedname}`
+    MPV_EXEC += ` --sub-file=${subtitles.quotedname}`
+    OMX_EXEC += ` --subtitles ${subtitles.quotedname}`
+  }
+  catch {
+    errorAndExit(`${sub} is not accessible. Check the file.`);
+  }
+}
+
+function startSubtitlesServer() {
+  subtitles.server = http.createServer(ecstatic({
+    root: subtitles.directory,
+    showDir: false,
+    cors: true,
+    contentType: 'text/vtt'
+  }))
+    
+  subtitles.server.listen(0, () => {
+    subtitles.href = `http://${networkAddress()}:${subtitles.server.address().port}/${encodeURIComponent(subtitles.basename)}` 
+  })
 }
 
 function runVersion () {
@@ -553,14 +609,15 @@ function runDownload (torrentId) {
 
       chromecasts.on('update', player => {
         player.play(href, {
-          title: `WebTorrent - ${torrent.files[index].name}`
+          title: `WebTorrent - ${torrent.files[index].name}`,
+          subtitles: ([subtitles.href] || []),
+          autoSubtitles: true
         })
-
         player.on('error', err => {
           err.message = `Chromecast: ${err.message}`
           return errorAndExit(err)
-        })
-      })
+        })        
+      })  
     }
 
     if (argv.xbmc) {
@@ -579,17 +636,12 @@ function runDownload (torrentId) {
           type: mime.getType(torrent.files[index].name)
         }
 
-        if (argv.subtitles) {
-          subtitlesServer.listen(0, () => {
-            opts.subtitles = [
-              `http://${networkAddress()}:${subtitlesServer.address().port}/${encodeURIComponent(path.basename(argv.subtitles))}`
-            ]
-            play()
-          })
-        } else {
-          play()
+        if (subtitles.href) {
+          opts.subtitles = [subtitles.href]
         }
-
+        
+        play()
+          
         function play () {
           player.play(href, opts)
         }
@@ -706,6 +758,9 @@ function drawTorrent (torrent) {
 
     if (playerName) {
       line(`{green:Streaming to: }{bold:${playerName}}  {green:Server running at: }{bold:${href}}`)
+      if (subtitles.href) {
+        line(`{green:Subtitle Track: }{bold:${subtitles.href}}`)
+      }
     } else if (server) {
       line(`{green:Server running at: }{bold:${href}}`)
     }
@@ -852,8 +907,8 @@ function gracefulExit () {
     return
   }
 
-  if (subtitlesServer) {
-    subtitlesServer.close()
+  if (subtitles.server) {
+    subtitles.server.close()
   }
 
   clearInterval(drawInterval)
