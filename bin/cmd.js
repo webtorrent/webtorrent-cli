@@ -72,6 +72,8 @@ const argv = minimist(process.argv.slice(2), {
     'verbose'
   ],
   string: [ // options that are always strings
+    'torrent-port',
+    'dht-port',
     'out',
     'announce',
     'blocklist',
@@ -306,6 +308,8 @@ function runHelp () {
       -b, --blocklist [path]    load blocklist file/http url
       -a, --announce [url]      tracker URL to announce to
       -q, --quiet               don't show UI on stdout
+      --torrent-port [number]   change the torrent seeding port [default: random]
+      --dht-port [number]       change the dht port [default: random]
       --pip                     enter Picture-in-Picture if supported by the player
       --not-on-top              don't set "always on top" option in player
       --keep-seeding            don't quit when done downloading
@@ -655,7 +659,11 @@ function runSeed (input) {
   const client = new WebTorrent({ blocklist: argv.blocklist })
   client.on('error', fatalError)
 
-  client.seed(input, { announce: argv.announce }, torrent => {
+  client.seed(input, {
+    announce: argv.announce,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  }, torrent => {
     if (argv.quiet) {
       console.log(torrent.magnetURI)
     }
@@ -702,6 +710,16 @@ function drawTorrent (torrent) {
 
     if (seeding) {
       line(`{green:Info hash: }${torrent.infoHash}`)
+      const seedingInfo = []
+      if (argv['torrent-port']) {
+        seedingInfo.push(`{green:Torrent port: }${argv['torrent-port']}`)
+      }
+      if (argv['dht-port']) {
+        seedingInfo.push(`{green:DHT port: }${argv['dht-port']}`)
+      }
+      if (seedingInfo.length) {
+        line(seedingInfo.join(' '))
+      }
     }
 
     if (playerName) {
