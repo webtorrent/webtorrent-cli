@@ -104,10 +104,10 @@ if (process.env.DEBUG) {
   VLC_ARGS += ' --extraintf=http:logger --verbose=2 --file-logging --logfile=vlc-log.txt'
 }
 
-let IINA_EXEC = '/Applications/IINA.app/Contents/MacOS/iina-cli --keep-running';
-let MPLAYER_EXEC = 'mplayer -really-quiet -noidx -loop 0';
-let MPV_EXEC = 'mpv --really-quiet --loop=no';
-let OMX_EXEC = `lxterminal -e omxplayer -r --timeout 60 --no-ghost-box --align center -o ${typeof argv.omx === 'string' ? argv.omx : 'hdmi'}`;
+let IINA_EXEC = '/Applications/IINA.app/Contents/MacOS/iina-cli --keep-running'
+let MPLAYER_EXEC = 'mplayer -really-quiet -noidx -loop 0'
+let MPV_EXEC = 'mpv --really-quiet --loop=no'
+let OMX_EXEC = `lxterminal -e omxplayer -r --timeout 60 --no-ghost-box --align center -o ${typeof argv.omx === 'string' ? argv.omx : 'hdmi'}`
 let subtitles = {}
 
 if (argv.subtitles) {
@@ -116,8 +116,8 @@ if (argv.subtitles) {
   loadSubtitles(subtitleFile)
   // Chromecast does not accept SubRip (.srt) subtitles
   // Create a VTT file and load it as subtitles
-  // convertSrtToVtt() checks for existing .vtt file with same filename  
-  if (argv.chromecast && path.extname(subtitleFile) == '.srt') {
+  // convertSrtToVtt() checks for existing .vtt file with same filename
+  if (argv.chromecast && path.extname(subtitleFile) === '.srt') {
     subtitleFile = convertSrtToVtt()
     loadSubtitles(subtitleFile)
     startSubtitlesServer()
@@ -254,58 +254,56 @@ function handleMultipleInputs (inputs) {
   enableQuiet()
 }
 
-function convertSrtToVtt() {
-  let vttFilename = path.join(subtitles.directory, path.basename(subtitles.basename, '.srt') + '.vtt');
+function convertSrtToVtt () {
+  const vttFilename = path.join(subtitles.directory, path.basename(subtitles.basename, '.srt') + '.vtt')
   try {
     // Check if the vtt file already exists and return the filename
-    fs.accessSync(vttFilename, fs.constants.R_OK);
-    return vttFilename;
-  }
-  catch {
+    fs.accessSync(vttFilename, fs.constants.R_OK)
+    return vttFilename
+  } catch {
     // Create the vtt file if it doesn't exist and return the filename
     fs.createReadStream(subtitles.file)
-    .pipe(srt2vtt())
-    .pipe(fs.createWriteStream(vttFilename))
-    return vttFilename;
-  }    
+      .pipe(srt2vtt())
+      .pipe(fs.createWriteStream(vttFilename))
+    return vttFilename
+  }
 }
 
-function loadSubtitles(subtitlePath) {
+function loadSubtitles (subtitlePath) {
   // Create a subtitle object containing all related properties
   // Some properties are assigned null for later use
-  let sub = path.resolve(subtitlePath);
-  try {    
-    fs.accessSync(sub);
+  const sub = path.resolve(subtitlePath)
+  try {
+    fs.accessSync(sub)
     subtitles = {
-      file: sub, 
+      file: sub,
       quotedname: JSON.stringify(sub),
-      directory: path.resolve(path.dirname(sub)), 
-      basename: path.basename(sub), 
-      href: null, 
+      directory: path.resolve(path.dirname(sub)),
+      basename: path.basename(sub),
+      href: null,
       error: null,
       server: null
-    }  
-    
+    }
+
     VLC_ARGS += ` --sub-file=${subtitles.quotedname}`
     MPLAYER_EXEC += ` -sub ${subtitles.quotedname}`
     MPV_EXEC += ` --sub-file=${subtitles.quotedname}`
     OMX_EXEC += ` --subtitles ${subtitles.quotedname}`
-  }
-  catch {
-    errorAndExit(`${sub} is not accessible. Check the file.`);
+  } catch {
+    errorAndExit(`${sub} is not accessible. Check the file.`)
   }
 }
 
-function startSubtitlesServer() {
+function startSubtitlesServer () {
   subtitles.server = http.createServer(ecstatic({
     root: subtitles.directory,
     showDir: false,
     cors: true,
     contentType: 'text/vtt'
   }))
-    
+
   subtitles.server.listen(0, () => {
-    subtitles.href = `http://${networkAddress()}:${subtitles.server.address().port}/${encodeURIComponent(subtitles.basename)}` 
+    subtitles.href = `http://${networkAddress()}:${subtitles.server.address().port}/${encodeURIComponent(subtitles.basename)}`
   })
 }
 
@@ -616,8 +614,8 @@ function runDownload (torrentId) {
         player.on('error', err => {
           err.message = `Chromecast: ${err.message}`
           return errorAndExit(err)
-        })        
-      })  
+        })
+      })
     }
 
     if (argv.xbmc) {
@@ -639,9 +637,9 @@ function runDownload (torrentId) {
         if (subtitles.href) {
           opts.subtitles = [subtitles.href]
         }
-        
+
         play()
-          
+
         function play () {
           player.play(href, opts)
         }
