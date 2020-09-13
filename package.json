@@ -20,16 +20,15 @@
     "dlnacasts": "^0.1.0",
     "ecstatic": "^4.1.4",
     "executable": "^4.1.1",
+    "memory-chunk-store": "^1.3.0",
     "mime": "^2.4.6",
-    "minimist": "^1.2.5",
-    "moment": "^2.27.0",
+    "moment": "^2.28.0",
     "network-address": "^1.1.2",
     "open": "^7.1.0",
     "parse-torrent": "^7.1.3",
     "prettier-bytes": "^1.0.4",
     "vlc-command": "^1.2.0",
     "webtorrent": ">=0.108.6",
-    "winreg": "^1.2.4",
     "yargs": "^16.0.3"
   },
   "devDependencies": {
