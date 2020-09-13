@@ -101,23 +101,16 @@ yargs
   .alias('h', 'help')
   .locale('en')
   .version(`${webTorrentCliVersion} (${webTorrentVersion})`)
-  .fail((msg, err) => {
-    clivas.line(`\n{red:Error:} ${msg}`)
-    process.exit(1)
-  })
+  .fail((msg, err) => { if (err) throw err; clivas.line(`\n{red:Error:} ${msg}`); process.exit(1) })
 
-yargs.command('$0 [torrent-ids...]', false, {}, (args) => {
-  if (args.torrentIds) {
-    handleMultipleInputs(args.torrentIds, runDownload)
-  }
-})
-yargs.command('download <torrent-ids...>', 'Download a torrent', {}, (args) => handleMultipleInputs(args.torrentIds, runDownload))
-yargs.command('downloadmeta <torrent-ids...>', 'Download metadata of torrent', {}, (args) => handleMultipleInputs(args.torrentIds, runDownloadMeta))
-yargs.command('seed <inputs...>', 'Seed a file or a folder', {}, (args) => handleMultipleInputs(args.inputs, runSeed))
-yargs.command('create <input>', 'Create a .torrent file', {}, (args) => runCreate(args.input))
-yargs.command('info <torrent-id>', 'Show info for .torrent file or magner uri', {}, (args) => runInfo(args.torrentId))
-yargs.command('version', 'Show version information', {}, () => console.log(`${webTorrentCliVersion} (${webTorrentVersion})`))
-yargs.command('help', 'Show help information', {}, () => console.log(helpOutput))
+yargs.command('$0 [torrent-ids...]', false, {}, (args) => { if (args.torrentIds) handleMultipleInputs(args.torrentIds, runDownload); else runHelp() })
+yargs.command('download <torrent-ids...>', 'Download a torrent', {}, (args) => { handleMultipleInputs(args.torrentIds, runDownload) })
+yargs.command('downloadmeta <torrent-ids...>', 'Download metadata of torrent', {}, (args) => { handleMultipleInputs(args.torrentIds, runDownloadMeta) })
+yargs.command('seed <inputs...>', 'Seed a file or a folder', {}, (args) => { handleMultipleInputs(args.inputs, runSeed) })
+yargs.command('create <input>', 'Create a .torrent file', {}, (args) => { runCreate(args.input) })
+yargs.command('info <torrent-id>', 'Show info for .torrent file or magner uri', {}, (args) => { runInfo(args.torrentId) })
+yargs.command('version', 'Show version information', {}, () => { console.log(`${webTorrentCliVersion} (${webTorrentVersion})`) })
+yargs.command('help', 'Show help information', {}, () => { runHelp() })
 
 yargs.options({
   airplay: { describe: 'Apple TV' },
@@ -176,11 +169,8 @@ yargs
 // #region Core functions
 
 function init (_argv) {
-  if (_argv.help || _argv._.includes('help') || _argv._.length === 0) {
-    printLogo()
-    console.log(helpOutput)
-    process.exit(0)
-  } else if (_argv.version) return
+  if (_argv.help || _argv._.includes('help')) runHelp()
+  else if (_argv.version) return
 
   argv = _argv
   playerArgs.omx.push(typeof argv.omx === 'string' ? argv.omx : 'hdmi')
@@ -196,9 +186,9 @@ function init (_argv) {
   playerName = selectedPlayers.length === 1 ? selectedPlayers[0] : null
 
   if (argv.subtitles) {
-    const subtitles = JSON.stringify(argv.subtitles)
+    const subtitles = quote(argv.subtitles)
 
-    playerArgs.vlc.push(`--sub-file=${subtitles}`)
+    playerArgs.vlc.push(`--sub-file=${quote(subtitles)}`)
     playerArgs.mplayer.push(`-sub ${subtitles}`)
     playerArgs.mpv.push(`--sub-file=${subtitles}`)
     playerArgs.omx.push(`--subtitles ${subtitles}`)
@@ -833,6 +823,12 @@ function quote (str) {
   } else {
     return `"${str}"`
   }
+}
+
+function runHelp (shouldExit = true) {
+  printLogo()
+  console.log(helpOutput)
+  if (shouldExit) process.exit(0)
 }
 
 // #endregion
