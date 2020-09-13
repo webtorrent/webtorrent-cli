@@ -103,6 +103,7 @@ test('Command line: webtorrent download <torrent file> (with local content)', t 
 
   const fixturesPath = path.join(path.dirname(require.resolve('webtorrent-fixtures')), 'fixtures')
 
+  console.log(`${CMD} download ${fixtures.leaves.torrentPath} --out ${fixturesPath}`)
   cp.exec(`${CMD} download ${fixtures.leaves.torrentPath} --out ${fixturesPath}`, (err, data) => {
     t.error(err)
     t.ok(data.includes('successfully'))

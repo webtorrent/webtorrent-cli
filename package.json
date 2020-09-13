@@ -29,11 +29,12 @@
     "prettier-bytes": "^1.0.4",
     "vlc-command": "^1.2.0",
     "webtorrent": ">=0.108.6",
-    "winreg": "^1.2.4"
+    "winreg": "^1.2.4",
+    "yargs": "^16.0.3"
   },
   "devDependencies": {
     "cross-spawn": "^7.0.3",
-    "standard": "*",
+    "standard": "^14.3.4",
     "tape": "^5.0.1",
     "webtorrent-fixtures": "^1.7.3",
     "xtend": "^4.0.2"
