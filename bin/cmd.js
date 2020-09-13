@@ -156,8 +156,12 @@ yargs.options({
   verbose: { describe: 'Show torrent protocol details' }
 }).group(optionGroups.advanced, 'Options (advanced)')
 
+yargs.options({
+  quit: { hidden: true, default: true }
+})
+
 // Very important to save help output.
-// When run from yargs.command() callback it will be incomplete (missing all commands)
+// Otherwise, when run from yargs.command() callback it will be incomplete (missing all commands)
 yargs.parse(['--help'], (_err, _argv, _output) => { helpOutput = _output })
 
 // Run main parser
@@ -447,20 +451,21 @@ function runDownload(torrentId) {
           return fatalError(err)
         }
         playerArgs.vlc[0] = vlcCmd
-        openPlayer(playerArgs.vlc)
+        console.log((href))
+        openPlayer(playerArgs.vlc.concat(quote(href)))
       })
     } else if (argv.iina) {
-      openPlayer(playerArgs.iina.concat(href))
+      openPlayer(playerArgs.iina.concat(quote(href)))
     } else if (argv.mplayer) {
-      openPlayer(playerArgs.mplayer.concat(href))
+      openPlayer(playerArgs.mplayer.concat(quote(href)))
     } else if (argv.mpv) {
-      openPlayer(playerArgs.mpv.concat(href))
+      openPlayer(playerArgs.mpv.concat(quote(href)))
     } else if (argv.omx) {
-      openPlayer(playerArgs.omx.concat(href))
+      openPlayer(playerArgs.omx.concat(quote(href)))
     }
 
     function openPlayer(args) {
-      cp.spawn(args[0], args.slice(1), { stdio: 'ignore', shell: true })
+      cp.spawn(quote(args[0]), args.slice(1), { stdio: 'ignore', shell: true })
         .on('error', (err) => {
           if (err) {
             const isMpvFalseError = playerName === 'mpv' && err.code === 4
@@ -815,6 +820,19 @@ function gracefulExit() {
     setTimeout(() => process.exit(0), 1000)
       .unref()
   })
+}
+
+function quote(str) {
+  if (str.includes('\"') && str.includes("\'")) {
+    // Is already quoted or can't be quoted
+    return str
+  } else if (str.includes('\"')) {
+    return `'${str}'`
+  } else if (str.includes("\'")) {
+    return `"${str}"`
+  } else {
+    return `"${str}"`
+  }
 }
 
 // #endregion
