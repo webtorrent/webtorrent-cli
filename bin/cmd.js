@@ -171,7 +171,7 @@ yargs
 
 // #region Core functions
 
-function init (_argv) {
+function init(_argv) {
   if (_argv.help || _argv._.includes('help')) runHelp()
   else if (_argv.version) return
 
@@ -222,18 +222,18 @@ function init (_argv) {
     argv.onExit = argv['on-exit'] = fs.realpathSync(argv.onExit)
   }
 
-  if (playerName) {
+  if (playerName && argv.playerArgs) {
     playerArgs[playerName].push(...argv.playerArgs.split(' '))
   }
 }
 
-function runHelp (shouldExit = true) {
+function runHelp(shouldExit = true) {
   printLogo()
   process.stdout.write(helpOutput)
   if (shouldExit) process.exit(0)
 }
 
-function runInfo (torrentId) {
+function runInfo(torrentId) {
   let parsedTorrent
 
   try {
@@ -263,7 +263,7 @@ function runInfo (torrentId) {
   }
 }
 
-function runCreate (input) {
+function runCreate(input) {
   if (!argv.createdBy) {
     argv.createdBy = 'WebTorrent <https://webtorrent.io>'
   }
@@ -281,7 +281,7 @@ function runCreate (input) {
   })
 }
 
-function runDownload (torrentId) {
+function runDownload(torrentId) {
   if (!argv.out && !argv.stdout && !playerName) {
     argv.out = process.cwd()
   }
@@ -302,7 +302,7 @@ function runDownload (torrentId) {
     updateMetadata()
     torrent.on('wire', updateMetadata)
 
-    function updateMetadata () {
+    function updateMetadata() {
       clivas.clear()
 
       clivas.line(
@@ -338,7 +338,7 @@ function runDownload (torrentId) {
   // Start http server
   server = torrent.createServer()
 
-  function initServer () {
+  function initServer() {
     if (torrent.ready) {
       onReady()
     } else {
@@ -358,7 +358,7 @@ function runDownload (torrentId) {
 
   server.once('connection', () => (serving = true))
 
-  function onReady () {
+  function onReady() {
     if (typeof argv.select === 'boolean') {
       clivas.line('Select a file to download:')
 
@@ -385,7 +385,7 @@ function runDownload (torrentId) {
     onSelection(index)
   }
 
-  function onSelection (index) {
+  function onSelection(index) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
@@ -418,7 +418,7 @@ function runDownload (torrentId) {
       openPlayer(playerArgs.omx.concat(JSON.stringify(href)))
     }
 
-    function openPlayer (args) {
+    function openPlayer(args) {
       cp.spawn(JSON.stringify(args[0]), args.slice(1), { stdio: 'ignore', shell: true })
         .on('error', (err) => {
           if (err) {
@@ -433,7 +433,7 @@ function runDownload (torrentId) {
         .unref()
     }
 
-    function playerExit () {
+    function playerExit() {
       if (argv.quit) {
         gracefulExit()
       }
@@ -489,7 +489,7 @@ function runDownload (torrentId) {
           play()
         }
 
-        function play () {
+        function play() {
           player.play(href, opts)
         }
       })
@@ -499,7 +499,7 @@ function runDownload (torrentId) {
   }
 }
 
-function runDownloadMeta (torrentId) {
+function runDownloadMeta(torrentId) {
   if (!argv.out && !argv.stdout) {
     argv.out = process.cwd()
   }
@@ -522,7 +522,7 @@ function runDownloadMeta (torrentId) {
     updateMetadata()
     torrent.on('wire', updateMetadata)
 
-    function updateMetadata () {
+    function updateMetadata() {
       clivas.clear()
       clivas.line(
         '{green:fetching torrent metadata from} {bold:%s} {green:peers}',
@@ -542,7 +542,7 @@ function runDownloadMeta (torrentId) {
   })
 }
 
-function runSeed (input) {
+function runSeed(input) {
   if (path.extname(input).toLowerCase() === '.torrent' || /^magnet:/.test(input)) {
     // `webtorrent seed` is meant for creating a new torrent based on a file or folder
     // of content, not a torrent id (.torrent or a magnet uri). If this command is used
@@ -567,7 +567,7 @@ function runSeed (input) {
   })
 }
 
-function drawTorrent (torrent) {
+function drawTorrent(torrent) {
   if (!argv.quiet) {
     process.stdout.write(Buffer.from('G1tIG1sySg==', 'base64')) // clear for drawing
     drawInterval = setInterval(draw, 1000)
@@ -580,7 +580,7 @@ function drawTorrent (torrent) {
   let blockedPeers = 0
   torrent.on('blockedPeer', () => (blockedPeers += 1))
 
-  function draw () {
+  function draw() {
     const unchoked = torrent.wires
       .filter(wire => !wire.peerChoking)
 
@@ -710,14 +710,14 @@ function drawTorrent (torrent) {
 
     clivas.flush(true)
 
-    function line (...args) {
+    function line(...args) {
       clivas.line(...args)
       linesRemaining -= 1
     }
   }
 }
 
-function torrentDone () {
+function torrentDone() {
   if (argv['on-done']) {
     cp.exec(argv['on-done']).unref()
   }
@@ -727,18 +727,18 @@ function torrentDone () {
   }
 }
 
-function fatalError (err) {
+function fatalError(err) {
   clivas.line(`{red:Error:} ${err.message || err}`)
   process.exit(1)
 }
 
-function errorAndExit (err) {
+function errorAndExit(err) {
   clivas.line(`{red:Error:} ${err.message || err}`)
   expectedError = true
   process.exit(1)
 }
 
-function gracefulExit () {
+function gracefulExit() {
   if (gracefullyExiting) {
     return
   }
@@ -776,7 +776,7 @@ function gracefulExit () {
   })
 }
 
-function checkPermission (filename) {
+function checkPermission(filename) {
   try {
     if (!executable.sync(filename)) {
       return errorAndExit(`Script "${filename}" is not executable`)
@@ -786,15 +786,15 @@ function checkPermission (filename) {
   }
 }
 
-function enableQuiet () {
+function enableQuiet() {
   argv.quiet = argv.q = true
 }
 
-function getRuntime () {
+function getRuntime() {
   return Math.floor((Date.now() - argv.startTime) / 1000)
 }
 
-function handleMultipleInputs (inputs, fn) {
+function handleMultipleInputs(inputs, fn) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
   if (inputs.length > 1) {
@@ -818,7 +818,7 @@ function handleMultipleInputs (inputs, fn) {
   })
 }
 
-function printLogo () {
+function printLogo() {
   fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
     .split('\n')
     .forEach(line => clivas.line(
