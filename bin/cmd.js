@@ -36,7 +36,8 @@ const optionGroups = {
     'torrent-port', 'dht-port',
     'pip', 'not-on-top',
     'keep-seeding', 'no-quit',
-    'on-done', 'on-exit', 'verbose'
+    'on-done', 'on-exit',
+    'verbose', 'player-args'
   ]
 }
 
@@ -90,6 +91,7 @@ yargs
 
     Examples:
       webtorrent download "magnet:..." --vlc
+      webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
 
     Specify <torrent-id> as one of:
       * magnet uri
@@ -101,7 +103,7 @@ yargs
   .alias('h', 'help')
   .locale('en')
   .version(`${webTorrentCliVersion} (${webTorrentVersion})`)
-  .fail((msg, err) => { if (err) throw err; clivas.line(`\n{red:Error:} ${msg}`); process.exit(1) })
+  .fail((msg, err) => { clivas.line(`\n{red:Error:} ${msg}`); process.exit(1) })
 
 yargs.command('$0 [torrent-ids...]', false, {}, (args) => { if (args.torrentIds) handleMultipleInputs(args.torrentIds, runDownload); else runHelp() })
 yargs.command('download <torrent-ids...>', 'Download a torrent', {}, (args) => { handleMultipleInputs(args.torrentIds, runDownload) })
@@ -127,24 +129,25 @@ yargs.options({
 
 yargs.options({
   o: { describe: 'Set download destination', alias: 'out', defaultDescription: 'current directory', requiresArg: true },
-  s: { describe: 'Select specific file in torrent (omit index for file list)', alias: 'select' },
-  t: { describe: 'Load subtitles file', alias: 'subtitles' }
+  s: { describe: 'Select specific file in torrent (omit index for file list)', alias: 'select', type: 'number', requiresArg: true },
+  t: { describe: 'Load subtitles file', alias: 'subtitles', type: 'string', requiresArg: true }
 }).group(optionGroups.simple, 'Options (simple): ')
 
 yargs.options({
-  p: { describe: 'Change the http server port', alias: 'port', default: 8000 },
-  b: { describe: 'Load blocklist file/url', alias: 'blocklist', type: 'string' },
-  a: { describe: 'Tracker URL to announce to', alias: 'announce', type: 'string' },
-  q: { describe: 'Don\'t show UI on stdout', alias: 'quiet' },
+  port: { describe: 'Change the http server port', alias: 'p', default: 8000, requiresArg: true },
+  blocklist: { describe: 'Load blocklist file/url', alias: 'b', type: 'string', requiresArg: true },
+  announce: { describe: 'Tracker URL to announce to', alias: 'a', type: 'string', requiresArg: true },
+  quiet: { describe: 'Don\'t show UI on stdout', alias: 'q' },
+  pip: { describe: 'Enter Picture-in-Picture if supported by the player' },
+  verbose: { describe: 'Show torrent protocol details' },
+  'player-args': { describe: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
   'torrent-port': { describe: 'Change the torrent seeding port', defaultDescription: 'random' },
   'dht-port': { describe: 'Change the dht port', defaultDescription: 'random' },
-  pip: { describe: 'Enter Picture-in-Picture if supported by the player' },
   'not-on-top': { describe: 'Don\'t set "always on top" option in player' },
   'keep-seeding': { describe: 'Don\'t quit when done downloading' },
   'no-quit': { describe: 'Don\'t quit when player exits' },
-  'on-done': { describe: 'Run script after torrent download is done' },
-  'on-exit': { describe: 'Run script before program exit' },
-  verbose: { describe: 'Show torrent protocol details' }
+  'on-done': { describe: 'Run script after torrent download is done', requiresArg: true },
+  'on-exit': { describe: 'Run script before program exit', requiresArg: true }
 }).group(optionGroups.advanced, 'Options (advanced)')
 
 yargs.options({
@@ -168,7 +171,7 @@ yargs
 
 // #region Core functions
 
-function init (_argv) {
+function init(_argv) {
   if (_argv.help || _argv._.includes('help')) runHelp()
   else if (_argv.version) return
 
@@ -218,15 +221,19 @@ function init (_argv) {
     checkPermission(argv.onExit)
     argv.onExit = argv['on-exit'] = fs.realpathSync(argv.onExit)
   }
+
+  if (playerName) {
+    playerArgs[playerName].push(...argv.playerArgs.split(' '))
+  }
 }
 
-function runHelp (shouldExit = true) {
+function runHelp(shouldExit = true) {
   printLogo()
   process.stdout.write(helpOutput)
   if (shouldExit) process.exit(0)
 }
 
-function runInfo (torrentId) {
+function runInfo(torrentId) {
   let parsedTorrent
 
   try {
@@ -256,7 +263,7 @@ function runInfo (torrentId) {
   }
 }
 
-function runCreate (input) {
+function runCreate(input) {
   if (!argv.createdBy) {
     argv.createdBy = 'WebTorrent <https://webtorrent.io>'
   }
@@ -274,7 +281,7 @@ function runCreate (input) {
   })
 }
 
-function runDownload (torrentId) {
+function runDownload(torrentId) {
   if (!argv.out && !argv.stdout && !playerName) {
     argv.out = process.cwd()
   }
@@ -295,7 +302,7 @@ function runDownload (torrentId) {
     updateMetadata()
     torrent.on('wire', updateMetadata)
 
-    function updateMetadata () {
+    function updateMetadata() {
       clivas.clear()
 
       clivas.line(
@@ -331,7 +338,7 @@ function runDownload (torrentId) {
   // Start http server
   server = torrent.createServer()
 
-  function initServer () {
+  function initServer() {
     if (torrent.ready) {
       onReady()
     } else {
@@ -351,7 +358,7 @@ function runDownload (torrentId) {
 
   server.once('connection', () => (serving = true))
 
-  function onReady () {
+  function onReady() {
     if (typeof argv.select === 'boolean') {
       clivas.line('Select a file to download:')
 
@@ -378,7 +385,7 @@ function runDownload (torrentId) {
     onSelection(index)
   }
 
-  function onSelection (index) {
+  function onSelection(index) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
@@ -411,7 +418,7 @@ function runDownload (torrentId) {
       openPlayer(playerArgs.omx.concat(JSON.stringify(href)))
     }
 
-    function openPlayer (args) {
+    function openPlayer(args) {
       cp.spawn(JSON.stringify(args[0]), args.slice(1), { stdio: 'ignore', shell: true })
         .on('error', (err) => {
           if (err) {
@@ -426,7 +433,7 @@ function runDownload (torrentId) {
         .unref()
     }
 
-    function playerExit () {
+    function playerExit() {
       if (argv.quit) {
         gracefulExit()
       }
@@ -482,7 +489,7 @@ function runDownload (torrentId) {
           play()
         }
 
-        function play () {
+        function play() {
           player.play(href, opts)
         }
       })
@@ -492,7 +499,7 @@ function runDownload (torrentId) {
   }
 }
 
-function runDownloadMeta (torrentId) {
+function runDownloadMeta(torrentId) {
   if (!argv.out && !argv.stdout) {
     argv.out = process.cwd()
   }
@@ -515,7 +522,7 @@ function runDownloadMeta (torrentId) {
     updateMetadata()
     torrent.on('wire', updateMetadata)
 
-    function updateMetadata () {
+    function updateMetadata() {
       clivas.clear()
       clivas.line(
         '{green:fetching torrent metadata from} {bold:%s} {green:peers}',
@@ -535,7 +542,7 @@ function runDownloadMeta (torrentId) {
   })
 }
 
-function runSeed (input) {
+function runSeed(input) {
   if (path.extname(input).toLowerCase() === '.torrent' || /^magnet:/.test(input)) {
     // `webtorrent seed` is meant for creating a new torrent based on a file or folder
     // of content, not a torrent id (.torrent or a magnet uri). If this command is used
@@ -560,7 +567,7 @@ function runSeed (input) {
   })
 }
 
-function drawTorrent (torrent) {
+function drawTorrent(torrent) {
   if (!argv.quiet) {
     process.stdout.write(Buffer.from('G1tIG1sySg==', 'base64')) // clear for drawing
     drawInterval = setInterval(draw, 1000)
@@ -573,7 +580,7 @@ function drawTorrent (torrent) {
   let blockedPeers = 0
   torrent.on('blockedPeer', () => (blockedPeers += 1))
 
-  function draw () {
+  function draw() {
     const unchoked = torrent.wires
       .filter(wire => !wire.peerChoking)
 
@@ -703,14 +710,14 @@ function drawTorrent (torrent) {
 
     clivas.flush(true)
 
-    function line (...args) {
+    function line(...args) {
       clivas.line(...args)
       linesRemaining -= 1
     }
   }
 }
 
-function torrentDone () {
+function torrentDone() {
   if (argv['on-done']) {
     cp.exec(argv['on-done']).unref()
   }
@@ -720,18 +727,18 @@ function torrentDone () {
   }
 }
 
-function fatalError (err) {
+function fatalError(err) {
   clivas.line(`{red:Error:} ${err.message || err}`)
   process.exit(1)
 }
 
-function errorAndExit (err) {
+function errorAndExit(err) {
   clivas.line(`{red:Error:} ${err.message || err}`)
   expectedError = true
   process.exit(1)
 }
 
-function gracefulExit () {
+function gracefulExit() {
   if (gracefullyExiting) {
     return
   }
@@ -769,7 +776,7 @@ function gracefulExit () {
   })
 }
 
-function checkPermission (filename) {
+function checkPermission(filename) {
   try {
     if (!executable.sync(filename)) {
       return errorAndExit(`Script "${filename}" is not executable`)
@@ -779,15 +786,15 @@ function checkPermission (filename) {
   }
 }
 
-function enableQuiet () {
+function enableQuiet() {
   argv.quiet = argv.q = true
 }
 
-function getRuntime () {
+function getRuntime() {
   return Math.floor((Date.now() - argv.startTime) / 1000)
 }
 
-function handleMultipleInputs (inputs, fn) {
+function handleMultipleInputs(inputs, fn) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
   if (inputs.length > 1) {
@@ -811,7 +818,7 @@ function handleMultipleInputs (inputs, fn) {
   })
 }
 
-function printLogo () {
+function printLogo() {
   fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
     .split('\n')
     .forEach(line => clivas.line(
