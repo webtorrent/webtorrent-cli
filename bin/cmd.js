@@ -27,18 +27,40 @@ const { version: webTorrentCliVersion } = require('../package.json')
 const { version: webTorrentVersion } = require('webtorrent/package.json')
 
 // Group options into sections (used in yargs configuration)
-const optionGroups = {
-  streaming: ['airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc', 'stdout'],
-  simple: ['out', 'select', 'subtitles', 'help', 'version'],
-  advanced: [
-    'port', 'blocklist',
-    'announce', 'quiet',
-    'torrent-port', 'dht-port',
-    'pip', 'not-on-top',
-    'keep-seeding', 'no-quit',
-    'on-done', 'on-exit',
-    'verbose', 'player-args'
-  ]
+const options = {
+  streaming: {
+    airplay: { describe: 'Apple TV' },
+    chromecast: { describe: 'Google Chromecast' },
+    dlna: { describe: 'DNLA' },
+    mplayer: { describe: 'MPlayer' },
+    mpv: { describe: 'MPV' },
+    omx: { describe: 'OMX', type: 'string|boolean', defaultDescription: 'hdmi' },
+    vlc: { describe: 'VLC' },
+    iina: { describe: 'IINA' },
+    xbmc: { describe: 'XBMC' },
+    stdout: { describe: 'Standard out (implies --quiet)' }
+  },
+  simple: {
+    out: { describe: 'Set download destination', alias: 'o', defaultDescription: 'current directory', requiresArg: true },
+    select: { describe: 'Select specific file in torrent (omit index for file list)', alias: 's', type: 'number', requiresArg: true },
+    subtitles: { describe: 'Load subtitles file', alias: 't', type: 'string', requiresArg: true }
+  },
+  advanced: {
+    port: { describe: 'Change the http server port', alias: 'p', default: 8000, requiresArg: true },
+    blocklist: { describe: 'Load blocklist file/url', alias: 'b', type: 'string', requiresArg: true },
+    announce: { describe: 'Tracker URL to announce to', alias: 'a', type: 'string', requiresArg: true },
+    quiet: { describe: 'Don\'t show UI on stdout', alias: 'q' },
+    pip: { describe: 'Enter Picture-in-Picture if supported by the player' },
+    verbose: { describe: 'Show torrent protocol details' },
+    'player-args': { describe: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
+    'torrent-port': { describe: 'Change the torrent seeding port', defaultDescription: 'random' },
+    'dht-port': { describe: 'Change the dht port', defaultDescription: 'random' },
+    'not-on-top': { describe: 'Don\'t set "always on top" option in player' },
+    'keep-seeding': { describe: 'Don\'t quit when done downloading' },
+    'no-quit': { describe: 'Don\'t quit when player exits' },
+    'on-done': { describe: 'Run script after torrent download is done', requiresArg: true },
+    'on-exit': { describe: 'Run script before program exit', requiresArg: true }
+  }
 }
 
 // All command line arguments in one place. (stuff gets added at runtime, e.g. vlc path and omx jack)
@@ -115,42 +137,11 @@ yargs.command('info <torrent-id>', 'Show info for .torrent file or magner uri', 
 yargs.command('version', 'Show version information', {}, () => { process.stdout.write(`${webTorrentCliVersion} (${webTorrentVersion})`) })
 yargs.command('help', 'Show help information', {}, () => { runHelp() })
 
-yargs.options({
-  airplay: { describe: 'Apple TV' },
-  chromecast: { describe: 'Google Chromecast' },
-  dlna: { describe: 'DNLA' },
-  mplayer: { describe: 'MPlayer' },
-  mpv: { describe: 'MPV' },
-  omx: { describe: 'OMX', type: 'string|boolean', defaultDescription: 'hdmi' },
-  vlc: { describe: 'VLC' },
-  iina: { describe: 'IINA' },
-  xbmc: { describe: 'XBMC' },
-  stdout: { describe: 'Standard out (implies --quiet)' }
-}).group(optionGroups.streaming, 'Options (streaming): ')
+yargs.options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
+yargs.options(options.simple).group(Object.keys(options.simple), 'Options (simple): ')
+yargs.options(options.advanced).group(Object.keys(options.advanced), 'Options (advanced)')
 
-yargs.options({
-  o: { describe: 'Set download destination', alias: 'out', defaultDescription: 'current directory', requiresArg: true },
-  s: { describe: 'Select specific file in torrent (omit index for file list)', alias: 'select', type: 'number', requiresArg: true },
-  t: { describe: 'Load subtitles file', alias: 'subtitles', type: 'string', requiresArg: true }
-}).group(optionGroups.simple, 'Options (simple): ')
-
-yargs.options({
-  port: { describe: 'Change the http server port', alias: 'p', default: 8000, requiresArg: true },
-  blocklist: { describe: 'Load blocklist file/url', alias: 'b', type: 'string', requiresArg: true },
-  announce: { describe: 'Tracker URL to announce to', alias: 'a', type: 'string', requiresArg: true },
-  quiet: { describe: 'Don\'t show UI on stdout', alias: 'q' },
-  pip: { describe: 'Enter Picture-in-Picture if supported by the player' },
-  verbose: { describe: 'Show torrent protocol details' },
-  'player-args': { describe: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
-  'torrent-port': { describe: 'Change the torrent seeding port', defaultDescription: 'random' },
-  'dht-port': { describe: 'Change the dht port', defaultDescription: 'random' },
-  'not-on-top': { describe: 'Don\'t set "always on top" option in player' },
-  'keep-seeding': { describe: 'Don\'t quit when done downloading' },
-  'no-quit': { describe: 'Don\'t quit when player exits' },
-  'on-done': { describe: 'Run script after torrent download is done', requiresArg: true },
-  'on-exit': { describe: 'Run script before program exit', requiresArg: true }
-}).group(optionGroups.advanced, 'Options (advanced)')
-
+// hidden options
 yargs.options({
   quit: { hidden: true, default: true }
 })
@@ -186,7 +177,7 @@ function init (_argv) {
     enableQuiet()
   }
 
-  const selectedPlayers = Object.keys(argv).filter(v => optionGroups.streaming.includes(v))
+  const selectedPlayers = Object.keys(argv).filter(v => Object.keys(options.streaming).includes(v))
   playerName = selectedPlayers.length === 1 ? selectedPlayers[0] : null
 
   if (argv.subtitles) {
