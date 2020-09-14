@@ -58,6 +58,7 @@ const playerArgs = {
 let client, href, server, serving, playerName, subtitlesServer, drawInterval, helpOutput
 let expectedError = false
 let gracefullyExiting = false
+let torrentCount = 1
 let argv = {}
 
 process.title = 'WebTorrent'
@@ -321,6 +322,7 @@ function runDownload (torrentId) {
   })
 
   torrent.on('done', () => {
+    torrentCount -= 1
     if (!argv.quiet) {
       const numActiveWires = torrent.wires
         .reduce((num, wire) => num + (wire.downloaded > 0), 0)
@@ -332,7 +334,7 @@ function runDownload (torrentId) {
       )
     }
 
-    torrentDone()
+    torrentDone(torrent)
   })
 
   // Start http server
@@ -717,13 +719,14 @@ function drawTorrent (torrent) {
   }
 }
 
-function torrentDone () {
+function torrentDone (torrent) {
   if (argv['on-done']) {
     cp.exec(argv['on-done']).unref()
   }
-
-  if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
+  if (!playerName && !serving && argv.out && !argv['keep-seeding'] && torrentCount === 0) {
     gracefulExit()
+  } else if (!argv.keepSeeding) {
+    torrent.destroy()
   }
 }
 
@@ -810,6 +813,7 @@ function handleMultipleInputs (inputs, fn) {
         ))
       }
     })
+    torrentCount = inputs.length
     enableQuiet()
   }
 
