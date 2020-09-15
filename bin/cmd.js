@@ -123,7 +123,6 @@ yargs
       * info hash (hex string)
     `)
   .alias({ h: 'help', v: 'version' })
-  .group(['help', 'version'], 'Options (simple): ')
   .locale('en')
   .version(`${webTorrentCliVersion} (${webTorrentVersion})`)
   .fail((msg, err) => { clivas.line(`\n{red:Error:} ${msg}`); process.exit(1) })
@@ -138,7 +137,7 @@ yargs.command('version', 'Show version information', {}, () => { process.stdout.
 yargs.command('help', 'Show help information', {}, () => { runHelp() })
 
 yargs.options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
-yargs.options(options.simple).group(Object.keys(options.simple), 'Options (simple): ')
+yargs.options(options.simple).group(Object.keys(options.simple).concat(['help', 'version']), 'Options (simple): ')
 yargs.options(options.advanced).group(Object.keys(options.advanced), 'Options (advanced)')
 
 // hidden options
