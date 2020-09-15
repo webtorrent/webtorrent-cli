@@ -122,8 +122,8 @@ yargs
       * filesystem path to .torrent file
       * info hash (hex string)
     `)
-  .alias('v', 'version')
-  .alias('h', 'help')
+  .alias({ h: 'help', v: 'version' })
+  .group(['help', 'version'], 'Options (simple): ')
   .locale('en')
   .version(`${webTorrentCliVersion} (${webTorrentVersion})`)
   .fail((msg, err) => { clivas.line(`\n{red:Error:} ${msg}`); process.exit(1) })
@@ -221,7 +221,7 @@ function init (_argv) {
 
 function runHelp (shouldExit = true) {
   printLogo()
-  process.stdout.write(helpOutput)
+  process.stdout.write(`${helpOutput}\n`)
   if (shouldExit) process.exit(0)
 }
 
