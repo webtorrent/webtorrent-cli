@@ -373,11 +373,17 @@ function runDownload (torrentId) {
     argv.out = process.cwd()
   }
 
-  client = new WebTorrent({ blocklist: argv.blocklist })
+  client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
-  const { out: path, announce } = argv
-  const torrent = client.add(torrentId, { path, announce })
+  const torrent = client.add(torrentId, {
+    path: argv.out,
+    announce: argv.announce
+  })
 
   torrent.on('infoHash', () => {
     if ('select' in argv) {
@@ -609,7 +615,11 @@ function runDownloadMeta (torrentId) {
     argv.out = process.cwd()
   }
 
-  client = new WebTorrent({ blocklist: argv.blocklist })
+  client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
   const torrent = client.add(torrentId, {
@@ -656,13 +666,15 @@ function runSeed (input) {
     return
   }
 
-  const client = new WebTorrent({ blocklist: argv.blocklist })
+  const client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
   client.seed(input, {
-    announce: argv.announce,
-    torrentPort: argv['torrent-port'],
-    dhtPort: argv['dht-port']
+    announce: argv.announce
   }, torrent => {
     if (argv.quiet) {
       console.log(torrent.magnetURI)
@@ -708,19 +720,12 @@ function drawTorrent (torrent) {
 
     line(`{green:${seeding ? 'Seeding' : 'Downloading'}: }{bold:${torrent.name}}`)
 
-    if (seeding) {
-      line(`{green:Info hash: }${torrent.infoHash}`)
-      const seedingInfo = []
-      if (argv['torrent-port']) {
-        seedingInfo.push(`{green:Torrent port: }${argv['torrent-port']}`)
-      }
-      if (argv['dht-port']) {
-        seedingInfo.push(`{green:DHT port: }${argv['dht-port']}`)
-      }
-      if (seedingInfo.length) {
-        line(seedingInfo.join(' '))
-      }
-    }
+    if (seeding) line(`{green:Info hash: }${torrent.infoHash}`)
+
+    const portInfo = []
+    if (argv['torrent-port']) portInfo.push(`{green:Torrent port: }${argv['torrent-port']}`)
+    if (argv['dht-port']) portInfo.push(`{green:DHT port: }${argv['dht-port']}`)
+    if (portInfo.length) line(portInfo.join(' '))
 
     if (playerName) {
       line(`{green:Streaming to: }{bold:${playerName}}  {green:Server running at: }{bold:${href}}`)
