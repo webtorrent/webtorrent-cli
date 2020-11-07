@@ -58,52 +58,61 @@ npm install webtorrent-cli -g
 
 ```bash
 $ webtorrent --help
+               _     _                            _
+ __      _____| |__ | |_ ___  _ __ _ __ ___ _ __ | |_
+ \ \ /\ / / _ \ '_ \| __/ _ \| '__| '__/ _ \ '_ \| __|
+  \ V  V /  __/ |_) | || (_) | |  | | |  __/ | | | |_
+   \_/\_/ \___|_.__/ \__\___/|_|  |_|  \___|_| |_|\__|
 
 Usage:
-    webtorrent [command] <torrent-id> <options>
+  webtorrent [command] <torrent-id> <options>
 
 Example:
-    webtorrent download "magnet:..." --vlc
+  webtorrent download "magnet:..." --vlc
 
 Commands:
-    download <torrent-id>   Download a torrent
-    seed <file/folder>      Seed a file or folder
-    create <file>           Create a .torrent file
-    info <torrent-id>       Show info for a .torrent file or magnet uri
+  download <torrent-id...>  Download a torrent
+  downloadmeta <torrent-id...> Download torrent metafile and save it usually from magnet link
+  seed <file/folder...>     Seed a file or folder
+  create <file/folder>      Create a .torrent file
+  info <torrent-id>         Show info for a .torrent file or magnet uri
 
 Specify <torrent-id> as one of:
-    * magnet uri
-    * http url to .torrent file
-    * filesystem path to .torrent file
-    * info hash (hex string)
+  * magnet uri
+  * http url to .torrent file
+  * filesystem path to .torrent file
+  * info hash (hex string)
 
 Options (streaming):
-    --airplay               Apple TV
-    --chromecast            Chromecast
-    --dlna                  DLNA
-    --mplayer               MPlayer
-    --mpv                   MPV
-    --omx [jack]            omx [default: hdmi]
-    --vlc                   VLC
-    --iina                  IINA
-    --xbmc                  XBMC
-    --stdout                standard out (implies --quiet)
+  --airplay                 Apple TV
+  --chromecast              Chromecast
+  --dlna                    DLNA
+  --mplayer                 MPlayer
+  --mpv                     MPV
+  --omx [jack]              omx [default: hdmi]
+  --vlc                     VLC
+  --iina                    IINA
+  --xbmc                    XBMC
+  --stdout                  standard out (implies --quiet)
 
 Options (simple):
-    -o, --out [path]        set download destination [default: current directory]
-    -s, --select [index]    select specific file in torrent (omit index for file list)
-    -t, --subtitles [path]  load subtitles file
-    -v, --version           print the current version
+  -o, --out [path]          set download destination [default: current directory]
+  -s, --select [index]      select specific file in torrent (omit index for file list)
+  -t, --subtitles [path]    load subtitles file
+  -v, --version             print the current version
 
 Options (advanced):
-    -p, --port [number]     change the http server port [default: 8000]
-    -b, --blocklist [path]  load blocklist file/http url
-    -a, --announce [url]    tracker URL to announce to
-    -q, --quiet             don't show UI on stdout
-    --keep-seeding          don't quit when done downloading
-    --on-done [script]      run script after torrent download is done
-    --on-exit [script]      run script before program exit
-    --verbose               show torrent protocol details
+  -p, --port [number]       change the http server port [default: 8000]
+  -b, --blocklist [path]    load blocklist file/http url
+  -a, --announce [url]      tracker URL to announce to
+  -q, --quiet               don't show UI on stdout
+  --pip                     enter Picture-in-Picture if supported by the player
+  --not-on-top              don't set "always on top" option in player
+  --keep-seeding            don't quit when done downloading
+  --no-quit                 don't quit when player exits
+  --on-done [script]        run script after torrent download is done
+  --on-exit [script]        run script before program exit
+  --verbose                 show torrent protocol details
 ```
 
 To download a torrent:
