@@ -204,7 +204,7 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
 
   if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
   numTorrents = torrentIds.length
-  
+
   torrentIds.forEach(torrentId => runDownload(torrentId))
 } else if (command === 'downloadmeta') {
   const torrentIds = argv._.slice(1)
@@ -403,7 +403,7 @@ function runDownload (torrentId) {
 
   torrent.on('done', () => {
     numTorrents -= 1
-    
+
     if (!argv.quiet) {
       const numActiveWires = torrent.wires
         .reduce((num, wire) => num + (wire.downloaded > 0), 0)
