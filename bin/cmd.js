@@ -12,13 +12,14 @@ const mime = require('mime')
 const minimist = require('minimist')
 const moment = require('moment')
 const networkAddress = require('network-address')
-const opn = require('opn')
+const open = require('open')
 const parseTorrent = require('parse-torrent')
 const path = require('path')
+const MemoryChunkStore = require('memory-chunk-store')
 const prettierBytes = require('prettier-bytes')
+const stripIndent = require('common-tags/lib/stripIndent')
 const vlcCommand = require('vlc-command')
 const WebTorrent = require('webtorrent')
-const MemoryChunkStore = require('memory-chunk-store')
 
 const { version: webTorrentCliVersion } = require('../package.json')
 const { version: webTorrentVersion } = require('webtorrent/package.json')
@@ -57,6 +58,7 @@ const argv = minimist(process.argv.slice(2), {
     'chromecast',
     'mplayer',
     'mpv',
+    'pip',
     'not-on-top',
     'vlc',
     'iina',
@@ -70,6 +72,8 @@ const argv = minimist(process.argv.slice(2), {
     'verbose'
   ],
   string: [ // options that are always strings
+    'torrent-port',
+    'dht-port',
     'out',
     'announce',
     'blocklist',
@@ -102,6 +106,7 @@ if (process.env.DEBUG) {
   VLC_ARGS += ' --extraintf=http:logger --verbose=2 --file-logging --logfile=vlc-log.txt'
 }
 
+let IINA_EXEC = '/Applications/IINA.app/Contents/MacOS/iina-cli --keep-running'
 let MPLAYER_EXEC = 'mplayer -really-quiet -noidx -loop 0'
 let MPV_EXEC = 'mpv --really-quiet --loop=no'
 let OMX_EXEC = `lxterminal -e omxplayer -r --timeout 60 --no-ghost-box --align center -o ${typeof argv.omx === 'string' ? argv.omx : 'hdmi'}`
@@ -121,6 +126,10 @@ if (argv.subtitles) {
   }))
 }
 
+if (argv.pip) {
+  IINA_EXEC += ' --pip'
+}
+
 if (!argv['not-on-top']) {
   VLC_ARGS += ' --video-on-top'
   MPLAYER_EXEC += ' -ontop'
@@ -130,10 +139,10 @@ if (!argv['not-on-top']) {
 function checkPermission (filename) {
   try {
     if (!executable.sync(filename)) {
-      errorAndExit(`Script "${filename}" is not executable`)
+      return errorAndExit(`Script "${filename}" is not executable`)
     }
   } catch (err) {
-    errorAndExit(`Script "${filename}" does not exist`)
+    return errorAndExit(`Script "${filename}" does not exist`)
   }
 }
 
@@ -169,7 +178,7 @@ const playerName = argv.airplay
 
 const command = argv._[0]
 
-let client, href, server, serving
+let client, href, server, serving, numTorrents
 
 if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.length === 1) {
   runHelp()
@@ -181,64 +190,51 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
   if (argv._.length !== 2) {
     runHelp()
   } else {
-    let torrentId = argv._[1]
+    const torrentId = argv._[1]
     runInfo(torrentId)
   }
 } else if (command === 'create') {
   if (argv._.length !== 2) {
     runHelp()
   } else {
-    let input = argv._[1]
+    const input = argv._[1]
     runCreate(input)
   }
 } else if (command === 'download' || command === 'add') {
-  let torrentIds = argv._.slice(1)
-
-  if (torrentIds.length > 1) {
-    handleMultipleInputs(torrentIds)
-  }
-
+  const torrentIds = argv._.slice(1)
+  processInputs(torrentIds)
   torrentIds.forEach(torrentId => runDownload(torrentId))
 } else if (command === 'downloadmeta') {
-  let torrentIds = argv._.slice(1)
-
-  if (torrentIds.length > 1) {
-    handleMultipleInputs(torrentIds)
-  }
-
+  const torrentIds = argv._.slice(1)
+  processInputs(torrentIds)
   torrentIds.forEach(torrentId => runDownloadMeta(torrentId))
 } else if (command === 'seed') {
-  let inputs = argv._.slice(1)
-
-  if (inputs.length > 1) {
-    handleMultipleInputs(inputs)
-  }
-
+  const inputs = argv._.slice(1)
+  processInputs(inputs)
   inputs.forEach(input => runSeed(input))
 } else if (command) {
   // assume command is "download" when not specified
-  let torrentIds = argv._
-
-  if (torrentIds.length > 1) {
-    handleMultipleInputs(torrentIds)
-  }
-
+  const torrentIds = argv._
+  processInputs(torrentIds)
   torrentIds.forEach(torrentId => runDownload(torrentId))
 } else {
   runHelp()
 }
 
-function handleMultipleInputs (inputs) {
+function processInputs (inputs) {
+  numTorrents = inputs.length
+  if (inputs.length === 1) return
+
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
-  let invalidArguments = [
+  const invalidArguments = [
     'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
     'stdout', 'select', 'subtitles'
   ]
 
   invalidArguments.forEach(arg => {
     if (argv[arg]) {
-      errorAndExit(new Error(
+      return errorAndExit(new Error(
         `The --${arg} argument cannot be used with multiple files/folders.`
       ))
     }
@@ -257,60 +253,60 @@ function runHelp () {
     .forEach(line => clivas.line(
       `{bold:${line.substring(0, 20)}}{red:${line.substring(20)}}`))
 
-  console.log((() => {
-    /*
+  console.log(stripIndent`
     Usage:
-    webtorrent [command] <torrent-id> <options>
+      webtorrent [command] <torrent-id> <options>
 
     Example:
-    webtorrent download "magnet:..." --vlc
+      webtorrent download "magnet:..." --vlc
 
     Commands:
-    download <torrent-id...>  Download a torrent
-    downloadmeta <torrent-id...> Download torrent metafile and save it usually from magnet link
-    seed <file/folder...>     Seed a file or folder
-    create <file/folder>      Create a .torrent file
-    info <torrent-id>         Show info for a .torrent file or magnet uri
+      download <torrent-id...>  Download a torrent
+      downloadmeta <torrent-id...> Download torrent metafile and save it usually from magnet link
+      seed <file/folder...>     Seed a file or folder
+      create <file/folder>      Create a .torrent file
+      info <torrent-id>         Show info for a .torrent file or magnet uri
 
     Specify <torrent-id> as one of:
-    * magnet uri
-    * http url to .torrent file
-    * filesystem path to .torrent file
-    * info hash (hex string)
+      * magnet uri
+      * http url to .torrent file
+      * filesystem path to .torrent file
+      * info hash (hex string)
 
     Options (streaming):
-    --airplay                                   Apple TV
-    --chromecast                                Chromecast
-    --chromecast="Livingroom TV","Bedroom TV"   Only selected chromecast devices
-    --dlna                                      DLNA
-    --mplayer                                   MPlayer
-    --mpv                                       MPV
-    --omx [jack]                                omx [default: hdmi]
-    --vlc                                       VLC
-    --iina                                      IINA
-    --xbmc                                      XBMC
-    --stdout                                    standard out (implies --quiet)
+      --airplay                                    Apple TV
+      --chromecast                                 Chromecast
+      --chromecast="Livingroom TV","Bedroom TV"    Only selected chromecast devices
+      --dlna                                       DLNA
+      --mplayer                                    MPlayer
+      --mpv                                        MPV
+      --omx [jack]                                 omx [default: hdmi]
+      --vlc                                        VLC
+      --iina                                       IINA
+      --xbmc                                       XBMC
+      --stdout                                     standard out (implies --quiet)
 
     Options (simple):
-    -o, --out [path]          set download destination [default: current directory]
-    -s, --select [index]      select specific file in torrent (omit index for file list)
-    -t, --subtitles [path]    load subtitles file
-    -v, --version             print the current version
+      -o, --out [path]          set download destination [default: current directory]
+      -s, --select [index]      select specific file in torrent (omit index for file list)
+      -t, --subtitles [path]    load subtitles file
+      -v, --version             print the current version
 
     Options (advanced):
-    -p, --port [number]       change the http server port [default: 8000]
-    -b, --blocklist [path]    load blocklist file/http url
-    -a, --announce [url]      tracker URL to announce to
-    -q, --quiet               don't show UI on stdout
-    --not-on-top              don't set "always on top" option in player
-    --keep-seeding            don't quit when done downloading
-    --no-quit                 don't quit when player exits
-    --on-done [script]        run script after torrent download is done
-    --on-exit [script]        run script before program exit
-    --verbose                 show torrent protocol details
-
-    */
-  }).toString().split(/\n/).slice(2, -2).join('\n'))
+      -p, --port [number]       change the http server port [default: 8000]
+      -b, --blocklist [path]    load blocklist file/http url
+      -a, --announce [url]      tracker URL to announce to
+      -q, --quiet               don't show UI on stdout
+      --torrent-port [number]   change the torrent seeding port [default: random]
+      --dht-port [number]       change the dht port [default: random]
+      --pip                     enter Picture-in-Picture if supported by the player
+      --not-on-top              don't set "always on top" option in player
+      --keep-seeding            don't quit when done downloading
+      --no-quit                 don't quit when player exits
+      --on-done [script]        run script after torrent download is done
+      --on-exit [script]        run script before program exit
+      --verbose                 show torrent protocol details
+  `)
 }
 
 function runInfo (torrentId) {
@@ -366,11 +362,17 @@ function runDownload (torrentId) {
     argv.out = process.cwd()
   }
 
-  client = new WebTorrent({ blocklist: argv.blocklist })
+  client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
-  const { out: path, announce } = argv
-  const torrent = client.add(torrentId, { path, announce })
+  const torrent = client.add(torrentId, {
+    path: argv.out,
+    announce: argv.announce
+  })
 
   torrent.on('infoHash', () => {
     if ('select' in argv) {
@@ -401,6 +403,8 @@ function runDownload (torrentId) {
   })
 
   torrent.on('done', () => {
+    numTorrents -= 1
+
     if (!argv.quiet) {
       const numActiveWires = torrent.wires
         .reduce((num, wire) => num + (wire.downloaded > 0), 0)
@@ -412,7 +416,15 @@ function runDownload (torrentId) {
       )
     }
 
-    torrentDone()
+    if (argv['on-done']) {
+      cp.exec(argv['on-done']).unref()
+    }
+
+    if (!playerName && !serving && argv.out && !argv['keep-seeding'] && numTorrents === 0) {
+      gracefulExit()
+    } else if (!argv['keep-seeding']) {
+      torrent.destroy()
+    }
   })
 
   // Start http server
@@ -433,7 +445,7 @@ function runDownload (torrentId) {
         return server.listen(0, initServer)
       }
 
-      fatalError(err)
+      return fatalError(err)
     })
 
   server.once('connection', () => (serving = true))
@@ -458,13 +470,19 @@ function runDownload (torrentId) {
       ? argv.select
       : torrent.files.indexOf(torrent.files.reduce((a, b) => a.length > b.length ? a : b))
 
+    if (!torrent.files[index]) {
+      return errorAndExit(`There's no file that maps to index ${index}`)
+    }
+
     onSelection(index)
   }
 
   function onSelection (index) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
-      ? `http://${networkAddress()}:${server.address().port}/${index}`
-      : `http://localhost:${server.address().port}/${index}`
+      ? `http://${networkAddress()}:${server.address().port}`
+      : `http://localhost:${server.address().port}`
+
+    href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
 
     if (playerName) {
       torrent.files[index].select()
@@ -473,8 +491,6 @@ function runDownload (torrentId) {
     if (argv.stdout) {
       torrent.files[index].createReadStream().pipe(process.stdout)
     }
-
-    href = href + '/' + torrent.infoHash + '/' + encodeURIComponent(torrent.files[index].name)
 
     if (argv.vlc) {
       vlcCommand((err, vlcCmd) => {
@@ -485,17 +501,17 @@ function runDownload (torrentId) {
         if (process.platform === 'win32') {
           openVLCWin32(vlcCmd)
         } else {
-          openPlayer(`${vlcCmd} ${href} ${VLC_ARGS}`)
+          openPlayer(`${vlcCmd} "${href}" ${VLC_ARGS}`)
         }
       })
     } else if (argv.iina) {
-      opn(`iina://weblink?url=${href}`)
+      openIINA(`${IINA_EXEC} "${href}"`, `iina://weblink?url=${href}`)
     } else if (argv.mplayer) {
-      openPlayer(`${MPLAYER_EXEC} ${href}`)
+      openPlayer(`${MPLAYER_EXEC} "${href}"`)
     } else if (argv.mpv) {
-      openPlayer(`${MPV_EXEC} ${href}`)
+      openPlayer(`${MPV_EXEC} "${href}"`)
     } else if (argv.omx) {
-      openPlayer(`${OMX_EXEC} ${href}`)
+      openPlayer(`${OMX_EXEC} "${href}"`)
     }
 
     function openPlayer (cmd) {
@@ -510,6 +526,13 @@ function runDownload (torrentId) {
       }).on('exit', playerExit).unref()
     }
 
+    function openIINA (cmd, href) {
+      cp.exec(cmd, () => {
+        open(href, { url: true })
+      }).on('exit', playerExit)
+        .unref()
+    }
+
     function openVLCWin32 (vlcCommand) {
       const args = [].concat(href, VLC_ARGS.split(' '))
 
@@ -521,7 +544,7 @@ function runDownload (torrentId) {
     }
 
     function playerExit () {
-      if (argv['quit']) {
+      if (argv.quit) {
         gracefulExit()
       }
     }
@@ -554,7 +577,7 @@ function runDownload (torrentId) {
 
           player.on('error', err => {
             err.message = `Chromecast: ${err.message}`
-            errorAndExit(err)
+            return errorAndExit(err)
           })
         }
       })
@@ -573,7 +596,7 @@ function runDownload (torrentId) {
       dlnacasts.on('update', player => {
         const opts = {
           title: `WebTorrent - ${torrent.files[index].name}`,
-          type: mime.lookup(torrent.files[index].name)
+          type: mime.getType(torrent.files[index].name)
         }
 
         if (argv.subtitles) {
@@ -602,7 +625,11 @@ function runDownloadMeta (torrentId) {
     argv.out = process.cwd()
   }
 
-  client = new WebTorrent({ blocklist: argv.blocklist })
+  client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
   const torrent = client.add(torrentId, {
@@ -649,10 +676,16 @@ function runSeed (input) {
     return
   }
 
-  const client = new WebTorrent({ blocklist: argv.blocklist })
+  const client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
-  client.seed(input, { announce: argv.announce }, torrent => {
+  client.seed(input, {
+    announce: argv.announce
+  }, torrent => {
     if (argv.quiet) {
       console.log(torrent.magnetURI)
     }
@@ -697,9 +730,12 @@ function drawTorrent (torrent) {
 
     line(`{green:${seeding ? 'Seeding' : 'Downloading'}: }{bold:${torrent.name}}`)
 
-    if (seeding) {
-      line(`{green:Info hash: }${torrent.infoHash}`)
-    }
+    if (seeding) line(`{green:Info hash: }${torrent.infoHash}`)
+
+    const portInfo = []
+    if (argv['torrent-port']) portInfo.push(`{green:Torrent port: }${argv['torrent-port']}`)
+    if (argv['dht-port']) portInfo.push(`{green:DHT port: }${argv['dht-port']}`)
+    if (portInfo.length) line(portInfo.join(' '))
 
     if (playerName) {
       line(`{green:Streaming to: }{bold:${playerName}}  {green:Server running at: }{bold:${href}}`)
@@ -809,16 +845,6 @@ function drawTorrent (torrent) {
       clivas.line(...args)
       linesRemaining -= 1
     }
-  }
-}
-
-function torrentDone () {
-  if (argv['on-done']) {
-    cp.exec(argv['on-done']).unref()
-  }
-
-  if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
-    gracefulExit()
   }
 }
 
