@@ -177,7 +177,7 @@ const playerName = argv.airplay
 
 const command = argv._[0]
 
-let client, href, server, serving
+let client, href, server, serving, numTorrents
 
 if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.length === 1) {
   runHelp()
@@ -202,34 +202,28 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
 } else if (command === 'download' || command === 'add') {
   const torrentIds = argv._.slice(1)
 
-  if (torrentIds.length > 1) {
-    handleMultipleInputs(torrentIds)
-  }
+  if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
+  numTorrents = torrentIds.length
 
   torrentIds.forEach(torrentId => runDownload(torrentId))
 } else if (command === 'downloadmeta') {
   const torrentIds = argv._.slice(1)
 
-  if (torrentIds.length > 1) {
-    handleMultipleInputs(torrentIds)
-  }
+  if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
 
   torrentIds.forEach(torrentId => runDownloadMeta(torrentId))
 } else if (command === 'seed') {
   const inputs = argv._.slice(1)
 
-  if (inputs.length > 1) {
-    handleMultipleInputs(inputs)
-  }
+  if (inputs.length > 1) handleMultipleInputs(inputs)
 
   inputs.forEach(input => runSeed(input))
 } else if (command) {
   // assume command is "download" when not specified
   const torrentIds = argv._
 
-  if (torrentIds.length > 1) {
-    handleMultipleInputs(torrentIds)
-  }
+  if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
+  numTorrents = torrentIds.length
 
   torrentIds.forEach(torrentId => runDownload(torrentId))
 } else {
@@ -414,6 +408,8 @@ function runDownload (torrentId) {
   })
 
   torrent.on('done', () => {
+    numTorrents -= 1
+
     if (!argv.quiet) {
       const numActiveWires = torrent.wires
         .reduce((num, wire) => num + (wire.downloaded > 0), 0)
@@ -425,7 +421,7 @@ function runDownload (torrentId) {
       )
     }
 
-    torrentDone()
+    torrentDone(this)
   })
 
   // Start http server
@@ -838,13 +834,15 @@ function drawTorrent (torrent) {
   }
 }
 
-function torrentDone () {
+function torrentDone (torrent) {
   if (argv['on-done']) {
     cp.exec(argv['on-done']).unref()
   }
 
-  if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
+  if (!playerName && !serving && argv.out && !argv['keep-seeding'] && !numTorrents) {
     gracefulExit()
+  } else if (!argv['keep-seeding']) {
+    torrent.destroy()
   }
 }
 
