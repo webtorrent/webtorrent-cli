@@ -201,36 +201,29 @@ if (['info', 'create', 'download', 'add', 'seed'].includes(command) && argv._.le
   }
 } else if (command === 'download' || command === 'add') {
   const torrentIds = argv._.slice(1)
-
-  if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
-  numTorrents = torrentIds.length
-
+  processInputs(torrentIds)
   torrentIds.forEach(torrentId => runDownload(torrentId))
 } else if (command === 'downloadmeta') {
   const torrentIds = argv._.slice(1)
-
-  if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
-
+  processInputs(torrentIds)
   torrentIds.forEach(torrentId => runDownloadMeta(torrentId))
 } else if (command === 'seed') {
   const inputs = argv._.slice(1)
-
-  if (inputs.length > 1) handleMultipleInputs(inputs)
-
+  processInputs(inputs)
   inputs.forEach(input => runSeed(input))
 } else if (command) {
   // assume command is "download" when not specified
   const torrentIds = argv._
-
-  if (torrentIds.length > 1) handleMultipleInputs(torrentIds)
-  numTorrents = torrentIds.length
-
+  processInputs(torrentIds)
   torrentIds.forEach(torrentId => runDownload(torrentId))
 } else {
   runHelp()
 }
 
-function handleMultipleInputs (inputs) {
+function processInputs (inputs) {
+  numTorrents = inputs.length
+  if (inputs.length === 1) return
+
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
   const invalidArguments = [
@@ -421,7 +414,15 @@ function runDownload (torrentId) {
       )
     }
 
-    torrentDone(this)
+    if (argv['on-done']) {
+      cp.exec(argv['on-done']).unref()
+    }
+
+    if (!playerName && !serving && argv.out && !argv['keep-seeding'] && numTorrents === 0) {
+      gracefulExit()
+    } else if (!argv['keep-seeding']) {
+      torrent.destroy()
+    }
   })
 
   // Start http server
@@ -831,18 +832,6 @@ function drawTorrent (torrent) {
       clivas.line(...args)
       linesRemaining -= 1
     }
-  }
-}
-
-function torrentDone (torrent) {
-  if (argv['on-done']) {
-    cp.exec(argv['on-done']).unref()
-  }
-
-  if (!playerName && !serving && argv.out && !argv['keep-seeding'] && !numTorrents) {
-    gracefulExit()
-  } else if (!argv['keep-seeding']) {
-    torrent.destroy()
   }
 }
 
