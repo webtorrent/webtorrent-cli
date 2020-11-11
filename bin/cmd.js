@@ -53,40 +53,61 @@ const argv = minimist(process.argv.slice(2), {
     t: 'subtitles',
     v: 'version'
   },
-  boolean: [ // options that are always boolean
+  boolean: [ // Boolean options
+    // Options (streaming)
     'airplay',
-    'chromecast',
+    'dlna',
+    'iina',
     'mplayer',
     'mpv',
-    'pip',
-    'not-on-top',
     'vlc',
-    'iina',
     'xbmc',
-    'stdout',
-    'quiet',
-    'keep-seeding',
-    'quit',
+
+    // Options (simple)
     'help',
     'version',
+
+    // Options (advanced)
+    'stdout',
+    'quiet',
+    'pip',
+    'not-on-top',
+    'keep-seeding',
+    'quit',
     'verbose'
   ],
-  string: [ // options that are always strings
-    'torrent-port',
-    'dht-port',
+  string: [ // String options
+    // Options (streaming)
+    'chromecast', // can also be a boolean
+    'omx', // can also be a boolean
+
+    // Options (simple)
     'out',
+    'subtitles',
+
+    // Options (advanced)
     'announce',
     'blocklist',
-    'subtitles',
     'on-done',
-    'on-exit',
-    'chromecast'
+    'on-exit'
   ],
   default: {
     port: 8000,
     quit: true
   }
 })
+
+if (argv.chromecast === undefined) {
+  argv.chromecast = false
+} else if (argv.chromecast === '') {
+  argv.chromecast = true
+}
+
+if (argv.omx === undefined) {
+  argv.omx = false
+} else if (argv.omx === '') {
+  argv.omx = true
+}
 
 if (process.env.DEBUG || argv.stdout) {
   enableQuiet()
