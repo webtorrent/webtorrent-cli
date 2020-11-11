@@ -441,10 +441,12 @@ function runDownload (torrentId) {
       cp.exec(argv['on-done']).unref()
     }
 
-    if (!playerName && !serving && argv.out && !argv['keep-seeding'] && numTorrents === 0) {
-      gracefulExit()
-    } else if (!argv['keep-seeding']) {
+    if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
       torrent.destroy()
+
+      if (numTorrents === 0) {
+        gracefulExit()
+      }
     }
   })
 
