@@ -578,19 +578,15 @@ function runDownload (torrentId) {
         .start()
     }
 
-    // If passed without arguments, it's still a string.
-    if (typeof argv.chromecast === 'string') {
+    if (argv.chromecast !== false) {
       const chromecasts = require('chromecasts')()
-      const selectedChromecasts = argv.chromecast.split(',').filter((arg) => arg !== '')
 
       chromecasts.on('update', player => {
-        const isSelectedChromecast = (name) => name.toLowerCase() === player.name.toLowerCase()
-
         if (
           // If there are no named chromecasts supplied, play on all devices
-          selectedChromecasts.length === 0 ||
+          argv.chromecast === true ||
           // If there are named chromecasts, check if this is one of them
-          selectedChromecasts.find(isSelectedChromecast)
+          [].concat(argv.chromecast).find(name => player.name.toLowerCase().includes(name.toLowerCase()))
         ) {
           player.play(href, {
             title: `WebTorrent - ${torrent.files[index].name}`
