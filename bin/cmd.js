@@ -43,14 +43,14 @@ process.on('SIGTERM', gracefulExit)
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
-    p: 'port',
-    b: 'blocklist',
-    t: 'subtitles',
-    s: 'select',
-    o: 'out',
     a: 'announce',
-    q: 'quiet',
+    b: 'blocklist',
     h: 'help',
+    o: 'out',
+    p: 'port',
+    q: 'quiet',
+    s: 'select',
+    t: 'subtitles',
     v: 'version'
   },
   boolean: [ // options that are always boolean
