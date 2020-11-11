@@ -177,23 +177,23 @@ if (argv['on-exit']) {
   argv['on-exit'] = fs.realpathSync(argv['on-exit'])
 }
 
-const playerName = argv.airplay
+const playerName = argv.airplay !== false
   ? 'Airplay'
-  : argv.chromecast
+  : argv.chromecast !== false
     ? 'Chromecast'
-    : argv.dlna
+    : argv.dlna !== false
       ? 'DLNA'
-      : argv.mplayer
-        ? 'MPlayer'
-        : argv.mpv
-          ? 'mpv'
-          : argv.omx
-            ? 'OMXPlayer'
-            : argv.vlc
-              ? 'VLC'
-              : argv.iina
-                ? 'IINA'
-                : argv.xbmc
+      : argv.iina !== false
+        ? 'IINA'
+        : argv.mplayer !== false
+          ? 'MPlayer'
+          : argv.mpv !== false
+            ? 'mpv'
+            : argv.omx !== false
+              ? 'OMXPlayer'
+              : argv.vlc !== false
+                ? 'VLC'
+                : argv.xbmc !== false
                   ? 'XBMC'
                   : null
 
@@ -295,28 +295,28 @@ function runHelp () {
       * info hash (hex string)
 
     Options (streaming):
-      --airplay                                    Apple TV
-      --chromecast                                 Chromecast
-      --chromecast="Livingroom TV","Bedroom TV"    Only selected chromecast devices
-      --dlna                                       DLNA
-      --mplayer                                    MPlayer
-      --mpv                                        MPV
-      --omx [jack]                                 omx [default: hdmi]
-      --vlc                                        VLC
-      --iina                                       IINA
-      --xbmc                                       XBMC
-      --stdout                                     standard out (implies --quiet)
+      --airplay                 Apple TV
+      --chromecast [name]       Chromecast [default: all]
+      --dlna                    DLNA
+      --iina                    IINA
+      --mplayer                 MPlayer
+      --mpv                     MPV
+      --omx [jack]              omx [default: hdmi]
+      --vlc                     VLC
+      --xbmc                    XBMC
 
-    Options (simple):
+      Options (simple):
       -o, --out [path]          set download destination [default: current directory]
       -s, --select [index]      select specific file in torrent (omit index for file list)
       -t, --subtitles [path]    load subtitles file
+      -h, --help                print this help text
       -v, --version             print the current version
 
-    Options (advanced):
+      Options (advanced):
+      --stdout                  standard out (implies --quiet)
       -p, --port [number]       change the http server port [default: 8000]
-      -b, --blocklist [path]    load blocklist file/http url
       -a, --announce [url]      tracker URL to announce to
+      -b, --blocklist [path]    load blocklist file/http url
       -q, --quiet               don't show UI on stdout
       --torrent-port [number]   change the torrent seeding port [default: random]
       --dht-port [number]       change the dht port [default: random]
