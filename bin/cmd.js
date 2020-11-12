@@ -43,50 +43,71 @@ process.on('SIGTERM', gracefulExit)
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
-    p: 'port',
-    b: 'blocklist',
-    t: 'subtitles',
-    s: 'select',
-    o: 'out',
     a: 'announce',
-    q: 'quiet',
+    b: 'blocklist',
     h: 'help',
+    o: 'out',
+    p: 'port',
+    q: 'quiet',
+    s: 'select',
+    t: 'subtitles',
     v: 'version'
   },
-  boolean: [ // options that are always boolean
+  boolean: [ // Boolean options
+    // Options (streaming)
     'airplay',
-    'chromecast',
+    'dlna',
+    'iina',
     'mplayer',
     'mpv',
-    'pip',
-    'not-on-top',
     'vlc',
-    'iina',
     'xbmc',
-    'stdout',
-    'quiet',
-    'keep-seeding',
-    'quit',
+
+    // Options (simple)
     'help',
     'version',
+
+    // Options (advanced)
+    'stdout',
+    'quiet',
+    'pip',
+    'not-on-top',
+    'keep-seeding',
+    'quit',
     'verbose'
   ],
-  string: [ // options that are always strings
-    'torrent-port',
-    'dht-port',
+  string: [ // String options
+    // Options (streaming)
+    'chromecast', // can also be a boolean
+    'omx', // can also be a boolean
+
+    // Options (simple)
     'out',
+    'subtitles',
+
+    // Options (advanced)
     'announce',
     'blocklist',
-    'subtitles',
     'on-done',
-    'on-exit',
-    'chromecast'
+    'on-exit'
   ],
   default: {
     port: 8000,
     quit: true
   }
 })
+
+if (argv.chromecast === undefined) {
+  argv.chromecast = false
+} else if (argv.chromecast === '') {
+  argv.chromecast = true
+}
+
+if (argv.omx === undefined) {
+  argv.omx = false
+} else if (argv.omx === '') {
+  argv.omx = true
+}
 
 if (process.env.DEBUG || argv.stdout) {
   enableQuiet()
@@ -156,23 +177,23 @@ if (argv['on-exit']) {
   argv['on-exit'] = fs.realpathSync(argv['on-exit'])
 }
 
-const playerName = argv.airplay
+const playerName = argv.airplay !== false
   ? 'Airplay'
-  : argv.chromecast
+  : argv.chromecast !== false
     ? 'Chromecast'
-    : argv.dlna
+    : argv.dlna !== false
       ? 'DLNA'
-      : argv.mplayer
-        ? 'MPlayer'
-        : argv.mpv
-          ? 'mpv'
-          : argv.omx
-            ? 'OMXPlayer'
-            : argv.vlc
-              ? 'VLC'
-              : argv.iina
-                ? 'IINA'
-                : argv.xbmc
+      : argv.iina !== false
+        ? 'IINA'
+        : argv.mplayer !== false
+          ? 'MPlayer'
+          : argv.mpv !== false
+            ? 'mpv'
+            : argv.omx !== false
+              ? 'OMXPlayer'
+              : argv.vlc !== false
+                ? 'VLC'
+                : argv.xbmc !== false
                   ? 'XBMC'
                   : null
 
@@ -274,28 +295,28 @@ function runHelp () {
       * info hash (hex string)
 
     Options (streaming):
-      --airplay                                    Apple TV
-      --chromecast                                 Chromecast
-      --chromecast="Livingroom TV","Bedroom TV"    Only selected chromecast devices
-      --dlna                                       DLNA
-      --mplayer                                    MPlayer
-      --mpv                                        MPV
-      --omx [jack]                                 omx [default: hdmi]
-      --vlc                                        VLC
-      --iina                                       IINA
-      --xbmc                                       XBMC
-      --stdout                                     standard out (implies --quiet)
+      --airplay                 Apple TV
+      --chromecast [name]       Chromecast [default: all]
+      --dlna                    DLNA
+      --iina                    IINA
+      --mplayer                 MPlayer
+      --mpv                     MPV
+      --omx [jack]              omx [default: hdmi]
+      --vlc                     VLC
+      --xbmc                    XBMC
 
-    Options (simple):
+      Options (simple):
       -o, --out [path]          set download destination [default: current directory]
       -s, --select [index]      select specific file in torrent (omit index for file list)
       -t, --subtitles [path]    load subtitles file
+      -h, --help                print this help text
       -v, --version             print the current version
 
-    Options (advanced):
+      Options (advanced):
+      --stdout                  standard out (implies --quiet)
       -p, --port [number]       change the http server port [default: 8000]
-      -b, --blocklist [path]    load blocklist file/http url
       -a, --announce [url]      tracker URL to announce to
+      -b, --blocklist [path]    load blocklist file/http url
       -q, --quiet               don't show UI on stdout
       --torrent-port [number]   change the torrent seeding port [default: random]
       --dht-port [number]       change the dht port [default: random]
@@ -420,10 +441,12 @@ function runDownload (torrentId) {
       cp.exec(argv['on-done']).unref()
     }
 
-    if (!playerName && !serving && argv.out && !argv['keep-seeding'] && numTorrents === 0) {
-      gracefulExit()
-    } else if (!argv['keep-seeding']) {
+    if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
       torrent.destroy()
+
+      if (numTorrents === 0) {
+        gracefulExit()
+      }
     }
   })
 
@@ -557,19 +580,15 @@ function runDownload (torrentId) {
         .start()
     }
 
-    // If passed without arguments, it's still a string.
-    if (typeof argv.chromecast === 'string') {
+    if (argv.chromecast !== false) {
       const chromecasts = require('chromecasts')()
-      const selectedChromecasts = argv.chromecast.split(',').filter((arg) => arg !== '')
 
       chromecasts.on('update', player => {
-        const isSelectedChromecast = (name) => name.toLowerCase() === player.name.toLowerCase()
-
         if (
           // If there are no named chromecasts supplied, play on all devices
-          selectedChromecasts.length === 0 ||
+          argv.chromecast === true ||
           // If there are named chromecasts, check if this is one of them
-          selectedChromecasts.find(isSelectedChromecast)
+          [].concat(argv.chromecast).find(name => player.name.toLowerCase().includes(name.toLowerCase()))
         ) {
           player.play(href, {
             title: `WebTorrent - ${torrent.files[index].name}`
