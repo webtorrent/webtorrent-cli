@@ -43,6 +43,7 @@
 - Brad Marsden <silentbot1@gmail.com>
 - Brice Waegeneire <brice.wge@gmail.com>
 - Pablo Andrés Dorado Suárez <hola@pablodorado.com>
+- Alex Frame <alex.frame@domain.com.au>
 - Anton Harniakou <anton.harniakou@gmail.com>
 - utlime <utlime@gmail.com>
 - Diego Rodriguez <diegorbaquero@gmail.com>
