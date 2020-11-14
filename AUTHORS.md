@@ -47,6 +47,7 @@
 - Anton Harniakou <anton.harniakou@gmail.com>
 - utlime <utlime@gmail.com>
 - Diego Rodriguez <diegorbaquero@gmail.com>
+- Dauden1184 <>
 - vrde <agranzot@gmail.com>
 - ksnikiforov <kirnik77@gmail.com>
 - Alex <alxmorais8@msn.com>
