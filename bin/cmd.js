@@ -127,10 +127,10 @@ yargs
   .version(`${webTorrentCliVersion} (${webTorrentVersion})`)
   .fail((msg, err) => { clivas.line(`\n{red:Error:} ${msg}`); process.exit(1) })
 
-yargs.command('$0 [torrent-ids...]', false, {}, (args) => { if (args.torrentIds) handleMultipleInputs(args.torrentIds, runDownload); else runHelp() })
-yargs.command('download <torrent-ids...>', 'Download a torrent', {}, (args) => { handleMultipleInputs(args.torrentIds, runDownload) })
-yargs.command('downloadmeta <torrent-ids...>', 'Download metadata of torrent', {}, (args) => { handleMultipleInputs(args.torrentIds, runDownloadMeta) })
-yargs.command('seed <inputs...>', 'Seed a file or a folder', {}, (args) => { handleMultipleInputs(args.inputs, runSeed) })
+yargs.command('$0 [torrent-ids...]', false, {}, (args) => { if (args.torrentIds) processInputs(args.torrentIds, runDownload); else runHelp() })
+yargs.command('download <torrent-ids...>', 'Download a torrent', {}, (args) => { processInputs(args.torrentIds, runDownload) })
+yargs.command('downloadmeta <torrent-ids...>', 'Download metadata of torrent', {}, (args) => { processInputs(args.torrentIds, runDownloadMeta) })
+yargs.command('seed <inputs...>', 'Seed a file or a folder', {}, (args) => { processInputs(args.inputs, runSeed) })
 yargs.command('create <input>', 'Create a .torrent file', {}, (args) => { runCreate(args.input) })
 yargs.command('info <torrent-id>', 'Show info for .torrent file or magner uri', {}, (args) => { runInfo(args.torrentId) })
 yargs.command('version', 'Show version information', {}, () => { process.stdout.write(`${webTorrentCliVersion} (${webTorrentVersion})`) })
@@ -189,7 +189,8 @@ function init (_argv) {
 
     subtitlesServer = http.createServer(ecstatic({
       root: path.dirname(argv.subtitles),
-      showDir: false
+      showDir: false,
+      cors: true
     }))
   }
 
@@ -277,11 +278,17 @@ function runDownload (torrentId) {
     argv.out = process.cwd()
   }
 
-  client = new WebTorrent({ blocklist: argv.blocklist })
+  client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
-  const { out: path, announce } = argv
-  const torrent = client.add(torrentId, { path, announce })
+  const torrent = client.add(torrentId, {
+    path: argv.out,
+    announce: argv.announce
+  })
 
   torrent.on('infoHash', () => {
     if ('select' in argv) {
@@ -439,18 +446,33 @@ function runDownload (torrentId) {
         .start()
     }
 
-    if (argv.chromecast) {
+    if (argv.chromecast !== false) {
       const chromecasts = require('chromecasts')()
 
-      chromecasts.on('update', player => {
-        player.play(href, {
-          title: `WebTorrent - ${torrent.files[index].name}`
-        })
+      var opts = {
+        title: `WebTorrent - ${torrent.files[index].name}`
+      }
 
-        player.on('error', err => {
-          err.message = `Chromecast: ${err.message}`
-          return errorAndExit(err)
-        })
+      if (argv.subtitles) {
+        subtitlesServer.listen(0)
+        opts.subtitles = [`http://${networkAddress()}:${subtitlesServer.address().port}/${encodeURIComponent(path.basename(argv.subtitles))}`]
+        opts.autoSubtitles = true
+      }
+
+      chromecasts.on('update', player => {
+        if (
+          // If there are no named chromecasts supplied, play on all devices
+          argv.chromecast === true ||
+          // If there are named chromecasts, check if this is one of them
+          [].concat(argv.chromecast).find(name => player.name.toLowerCase().includes(name.toLowerCase()))
+        ) {
+          player.play(href, opts)
+
+          player.on('error', err => {
+            err.message = `Chromecast: ${err.message}`
+            return errorAndExit(err)
+          })
+        }
       })
     }
 
@@ -496,7 +518,11 @@ function runDownloadMeta (torrentId) {
     argv.out = process.cwd()
   }
 
-  client = new WebTorrent({ blocklist: argv.blocklist })
+  client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
   const torrent = client.add(torrentId, {
@@ -543,13 +569,15 @@ function runSeed (input) {
     return
   }
 
-  const client = new WebTorrent({ blocklist: argv.blocklist })
+  const client = new WebTorrent({
+    blocklist: argv.blocklist,
+    torrentPort: argv['torrent-port'],
+    dhtPort: argv['dht-port']
+  })
   client.on('error', fatalError)
 
   client.seed(input, {
-    announce: argv.announce,
-    torrentPort: argv['torrent-port'],
-    dhtPort: argv['dht-port']
+    announce: argv.announce
   }, torrent => {
     if (argv.quiet) {
       process.stdout.write(torrent.magnetURI)
@@ -594,19 +622,12 @@ function drawTorrent (torrent) {
 
     line(`{green:${seeding ? 'Seeding' : 'Downloading'}: }{bold:${torrent.name}}`)
 
-    if (seeding) {
-      line(`{green:Info hash: }${torrent.infoHash}`)
-      const seedingInfo = []
-      if (argv['torrent-port']) {
-        seedingInfo.push(`{green:Torrent port: }${argv['torrent-port']}`)
-      }
-      if (argv['dht-port']) {
-        seedingInfo.push(`{green:DHT port: }${argv['dht-port']}`)
-      }
-      if (seedingInfo.length) {
-        line(seedingInfo.join(' '))
-      }
-    }
+    if (seeding) line(`{green:Info hash: }${torrent.infoHash}`)
+
+    const portInfo = []
+    if (argv['torrent-port']) portInfo.push(`{green:Torrent port: }${argv['torrent-port']}`)
+    if (argv['dht-port']) portInfo.push(`{green:DHT port: }${argv['dht-port']}`)
+    if (portInfo.length) line(portInfo.join(' '))
 
     if (playerName) {
       line(`{green:Streaming to: }{bold:${playerName}}  {green:Server running at: }{bold:${href}}`)
@@ -713,10 +734,12 @@ function torrentDone (torrent) {
   if (argv['on-done']) {
     cp.exec(argv['on-done']).unref()
   }
-  if (!playerName && !serving && argv.out && !argv['keep-seeding'] && torrentCount === 0) {
-    gracefulExit()
-  } else if (!argv.keepSeeding) {
+  if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
     torrent.destroy()
+
+    if (torrentCount === 0) {
+      gracefulExit()
+    }
   }
 }
 
@@ -787,7 +810,7 @@ function getRuntime () {
   return Math.floor((Date.now() - argv.startTime) / 1000)
 }
 
-function handleMultipleInputs (inputs, fn) {
+function processInputs (inputs, fn) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
   if (inputs.length > 1) {
