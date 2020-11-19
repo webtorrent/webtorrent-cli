@@ -396,6 +396,10 @@ function runDownload (torrentId) {
     announce: argv.announce
   })
 
+  if (argv.verbose) {
+    torrent.on('warning', handleWarning)
+  }
+
   torrent.on('infoHash', () => {
     if ('select' in argv) {
       torrent.so = argv.select.toString()
@@ -584,7 +588,7 @@ function runDownload (torrentId) {
     if (argv.chromecast !== false) {
       const chromecasts = require('chromecasts')()
 
-      var opts = {
+      const opts = {
         title: `WebTorrent - ${torrent.files[index].name}`
       }
 
@@ -874,6 +878,10 @@ function drawTorrent (torrent) {
       linesRemaining -= 1
     }
   }
+}
+
+function handleWarning (err) {
+  console.warn(`Warning: ${err.message || err}`)
 }
 
 function fatalError (err) {
