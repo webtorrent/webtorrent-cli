@@ -65,63 +65,61 @@ $ webtorrent --help
    \_/\_/ \___|_.__/ \__\___/|_|  |_|  \___|_| |_|\__|
 
 Usage:
-  webtorrent [command] <torrent-id> [options]
+  webtorrent [command] <torrent-id> <options>
 
-Examples:
+Example:
   webtorrent download "magnet:..." --vlc
   webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
 
+Commands:
+  download <torrent-ids...>     Download a torrent
+  downloadmeta <torrent-ids...> Download metadata of torrent
+  seed <inputs...>              Seed a file or a folder
+  create <input>                Create a .torrent file
+  info <torrent-id>             Show info for .torrent file or magner uri
+  version                       Show version information
+  help                          Show help information
+  
 Specify <torrent-id> as one of:
   * magnet uri
   * http url to .torrent file
   * filesystem path to .torrent file
   * info hash (hex string)
 
-Commands:
-  webtorrent download <torrent-ids...>      Download a torrent
-  webtorrent downloadmeta <torrent-ids...>  Download metadata of torrent
-  webtorrent seed <inputs...>               Seed a file or a folder
-  webtorrent create <input>                 Create a .torrent file
-  webtorrent info <torrent-id>              Show info for .torrent file or
-                                            magner uri
-  webtorrent version                        Show version information
-  webtorrent help                           Show help information
-
 Options (streaming):
-      --airplay     Apple TV
-      --chromecast  Google Chromecast
-      --dlna        DNLA
-      --mplayer     MPlayer
-      --mpv         MPV
-      --omx         OMX                                          [default: hdmi]
-      --vlc         VLC
-      --iina        IINA
-      --xbmc        XBMC
-      --stdout      Standard out (implies --quiet)
-
+  --airplay                     Apple TV 
+  --chromecast [name]           Google Chromecast [default: all]
+  --dlna                        DNLA 
+  --mplayer                     MPlayer 
+  --mpv                         MPV 
+  --omx [jack]                  OMX [default: hdmi]
+  --vlc                         VLC 
+  --iina                        IINA 
+  --xbmc                        XBMC 
+  --stdout                      Standard out (implies --quiet) 
+  
 Options (simple):
-  -o, --out        Set download destination         [default: current directory]
-  -s, --select     Select specific file in torrent (omit index for file list)
-                                                                        [number]
-  -t, --subtitles  Load subtitles file                                  [string]
-  -h, --help       Show help                                           [boolean]
-  -v, --version    Show version number                                 [boolean]
-
-Options (advanced)
-  -p, --port          Change the http server port                [default: 8000]
-  -b, --blocklist     Load blocklist file/url                           [string]
-  -a, --announce      Tracker URL to announce to                        [string]
-  -q, --quiet         Don't show UI on stdout
-      --torrent-port  Change the torrent seeding port          [default: random]
-      --dht-port      Change the dht port                      [default: random]
-      --pip           Enter Picture-in-Picture if supported by the player
-      --not-on-top    Don't set "always on top" option in player
-      --keep-seeding  Don't quit when done downloading
-      --no-quit       Don't quit when player exits
-      --on-done       Run script after torrent download is done
-      --on-exit       Run script before program exit
-      --verbose       Show torrent protocol details
-      --player-args   Add player specific arguments (see example)       [string]
+  -h, --help                    Show help information 
+  -v, --version                 Show version information 
+  -o, --out [path]              Set download destination [default: current directory]
+  -s, --select [index]          Select specific file in torrent (omit index for file list) 
+  -t, --subtitles [path]        Load subtitles file 
+  
+Options (advanced):
+  -p, --port [number]           Change the http server port [default: 8000]
+  -b, --blocklist [path]        Load blocklist file/url 
+  -a, --announce [url]          Tracker URL to announce to 
+  -q, --quiet                   Don't show UI on stdout 
+  --pip                         Enter Picture-in-Picture if supported by the player 
+  --verbose                     Show torrent protocol details 
+  --player-args [string]        Add player specific arguments (see example) 
+  --torrent-port [number]       Change the torrent seeding port [default: random]
+  --dht-port [number]           Change the dht port [default: random]
+  --not-on-top                  Don't set "always on top" option in player 
+  --keep-seeding                Don't quit when done downloading 
+  --no-quit                     Don't quit when player exits 
+  --on-done [script]            Run script after torrent download is done 
+  --on-exit [script]            Run script before program exit
 ```
 
 To download a torrent:
