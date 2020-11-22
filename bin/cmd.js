@@ -30,7 +30,7 @@ const { version: webTorrentVersion } = require('webtorrent/package.json')
 const options = {
   streaming: {
     airplay: { describe: 'Apple TV' },
-    chromecast: { describe: 'Google Chromecast', type: 'string|boolean', defaultDescription: 'name' },
+    chromecast: { describe: 'Google Chromecast', type: 'string|boolean', defaultDescription: 'all' },
     dlna: { describe: 'DNLA' },
     mplayer: { describe: 'MPlayer' },
     mpv: { describe: 'MPV' },
@@ -58,6 +58,7 @@ const options = {
     'not-on-top': { describe: 'Don\'t set "always on top" option in player' },
     'keep-seeding': { describe: 'Don\'t quit when done downloading' },
     'no-quit': { describe: 'Don\'t quit when player exits' },
+    quit: { hidden: true, default: true },
     'on-done': { describe: 'Run script after torrent download is done', requiresArg: true },
     'on-exit': { describe: 'Run script before program exit', requiresArg: true }
   }
@@ -133,17 +134,12 @@ yargs.command('downloadmeta <torrent-ids...>', 'Download metadata of torrent', {
 yargs.command('seed <inputs...>', 'Seed a file or a folder', {}, (args) => { processInputs(args.inputs, runSeed) })
 yargs.command('create <input>', 'Create a .torrent file', {}, (args) => { runCreate(args.input) })
 yargs.command('info <torrent-id>', 'Show info for .torrent file or magner uri', {}, (args) => { runInfo(args.torrentId) })
-yargs.command('version', 'Show version information', {}, () => { process.stdout.write(`${webTorrentCliVersion} (${webTorrentVersion})`) })
+yargs.command('version', 'Show version information', {}, () => { console.log(`${webTorrentCliVersion} (${webTorrentVersion})`) })
 yargs.command('help', 'Show help information', {}, () => { runHelp() })
 
 yargs.options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
 yargs.options(options.simple).group(Object.keys(options.simple).concat(['help', 'version']), 'Options (simple): ')
 yargs.options(options.advanced).group(Object.keys(options.advanced), 'Options (advanced)')
-
-// hidden options
-yargs.options({
-  quit: { hidden: true, default: true }
-})
 
 // Very important to save help output.
 // Otherwise, when run from yargs.command() callback it will be incomplete (missing all commands)
@@ -223,7 +219,7 @@ function runHelp () {
   fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
     .split('\n')
     .forEach(line => clivas.line(`{bold:${line.substring(0, 20)}}{red:${line.substring(20)}}`))
-  process.stdout.write(`${helpOutput}\n`)
+  console.log(`${helpOutput}\n`)
 }
 
 function runInfo (torrentId) {
@@ -587,7 +583,7 @@ function runSeed (input) {
     announce: argv.announce
   }, torrent => {
     if (argv.quiet) {
-      process.stdout.write(torrent.magnetURI)
+      console.log(torrent.magnetURI)
     }
 
     drawTorrent(torrent)
