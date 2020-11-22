@@ -349,16 +349,18 @@ function runDownload (torrentId) {
     }
   }
 
-  server.listen(argv.port, initServer)
+  server.listen(argv.port)
     .on('error', err => {
       if (err.code === 'EADDRINUSE' || err.code === 'EACCES') {
         // If port is taken, pick one a free one automatically
-        return server.listen(0, initServer)
-      }
-
-      return fatalError(err)
+        server.close()
+        const serv = server.listen(0)
+        argv.port = server.address().port
+        return serv
+      } else return fatalError(err)
     })
 
+  server.once('listening', initServer)
   server.once('connection', () => (serving = true))
 
   function onReady () {
