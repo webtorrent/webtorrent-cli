@@ -219,10 +219,11 @@ function init (_argv) {
   }
 }
 
-function runHelp (shouldExit = true) {
-  printLogo()
+function runHelp () {
+  fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
+    .split('\n')
+    .forEach(line => clivas.line(`{bold:${line.substring(0, 20)}}{red:${line.substring(20)}}`))
   process.stdout.write(`${helpOutput}\n`)
-  if (shouldExit) process.exit(0)
 }
 
 function runInfo (torrentId) {
@@ -843,13 +844,6 @@ function processInputs (inputs, fn) {
   inputs.forEach(input => {
     fn(input)
   })
-}
-
-function printLogo () {
-  fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
-    .split('\n')
-    .forEach(line => clivas.line(
-      `{bold:${line.substring(0, 20)}}{red:${line.substring(20)}}`))
 }
 
 // #endregion
