@@ -1,6 +1,8 @@
+#!/usr/bin/env node
+'use strict'
 
 // #region Variables
-const minimist = require('minimist')
+
 const clivas = require('clivas')
 const cp = require('child_process')
 const createTorrent = require('create-torrent')
@@ -18,46 +20,46 @@ const prettierBytes = require('prettier-bytes')
 const stripIndent = require('common-tags/lib/stripIndent')
 const vlcCommand = require('vlc-command')
 const WebTorrent = require('webtorrent')
+const yargs = require('yargs')
 const open = require('open')
 
 const { version: webTorrentCliVersion } = require('../package.json')
 const { version: webTorrentVersion } = require('webtorrent/package.json')
 
+// Group options into sections (used in yargs configuration)
 const options = {
   streaming: {
     airplay: { describe: 'Apple TV' },
-    chromecast: { describe: 'Google Chromecast', type: 'any', defaultDescription: 'all', argumentDescription: 'name' },
+    chromecast: { describe: 'Google Chromecast' },
     dlna: { describe: 'DNLA' },
     mplayer: { describe: 'MPlayer' },
     mpv: { describe: 'MPV' },
-    omx: { describe: 'OMX', type: 'any', defaultDescription: 'hdmi', argumentDescription: 'jack' },
+    omx: { describe: 'OMX', type: 'string|boolean', defaultDescription: 'hdmi' },
     vlc: { describe: 'VLC' },
     iina: { describe: 'IINA' },
     xbmc: { describe: 'XBMC' },
     stdout: { describe: 'Standard out (implies --quiet)' }
   },
   simple: {
-    help: { describe: 'Show help information', alias: 'h' },
-    version: { describe: 'Show version information', alias: 'v' },
-    out: { describe: 'Set download destination', alias: 'o', type: 'string', defaultDescription: 'current directory', argumentDescription: 'path' },
-    select: { describe: 'Select specific file in torrent (omit index for file list)', alias: 's', type: 'string', argumentDescription: 'index' },
-    subtitles: { describe: 'Load subtitles file', alias: 't', type: 'string', argumentDescription: 'path' }
+    out: { describe: 'Set download destination', alias: 'o', defaultDescription: 'current directory', requiresArg: true },
+    select: { describe: 'Select specific file in torrent (omit index for file list)', alias: 's', type: 'number', requiresArg: true },
+    subtitles: { describe: 'Load subtitles file', alias: 't', type: 'string', requiresArg: true }
   },
   advanced: {
-    port: { describe: 'Change the http server port', alias: 'p', default: 8000 },
-    blocklist: { describe: 'Load blocklist file/url', alias: 'b', type: 'string', argumentDescription: 'path' },
-    announce: { describe: 'Tracker URL to announce to', alias: 'a', type: 'string', argumentDescription: 'url' },
+    port: { describe: 'Change the http server port', alias: 'p', default: 8000, requiresArg: true },
+    blocklist: { describe: 'Load blocklist file/url', alias: 'b', type: 'string', requiresArg: true },
+    announce: { describe: 'Tracker URL to announce to', alias: 'a', type: 'string', requiresArg: true },
     quiet: { describe: 'Don\'t show UI on stdout', alias: 'q' },
     pip: { describe: 'Enter Picture-in-Picture if supported by the player' },
     verbose: { describe: 'Show torrent protocol details' },
-    'player-args': { describe: 'Add player specific arguments (see example)', type: 'string' },
-    'torrent-port': { describe: 'Change the torrent seeding port', defaultDescription: 'random', type: 'number' },
-    'dht-port': { describe: 'Change the dht port', defaultDescription: 'random', type: 'number' },
+    'player-args': { describe: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
+    'torrent-port': { describe: 'Change the torrent seeding port', defaultDescription: 'random' },
+    'dht-port': { describe: 'Change the dht port', defaultDescription: 'random' },
     'not-on-top': { describe: 'Don\'t set "always on top" option in player' },
     'keep-seeding': { describe: 'Don\'t quit when done downloading' },
     'no-quit': { describe: 'Don\'t quit when player exits' },
-    'on-done': { describe: 'Run script after torrent download is done', type: 'string', argumentDescription: 'script' },
-    'on-exit': { describe: 'Run script before program exit', type: 'string', argumentDescription: 'script' }
+    'on-done': { describe: 'Run script after torrent download is done', requiresArg: true },
+    'on-exit': { describe: 'Run script before program exit', requiresArg: true }
   }
 }
 
@@ -75,28 +77,11 @@ const playerArgs = {
   ]
 }
 
-const commands = {
-  '*': { template: '[torrent-ids...]', cb: (argv) => argv.torrentIds ? processInputs(argv.torrentIds, runDownload) : runHelp() },
-  download: { describe: 'Download a torrent', template: '<torrent-ids...>', cb: (argv) => processInputs(argv.torrentIds, runDownload) },
-  downloadmeta: { describe: 'Download metadata of torrent', template: '<torrent-ids...>', cb: (argv) => processInputs(argv.torrentIds, runDownloadMeta) },
-  seed: { describe: 'Seed a file or a folder', template: '<inputs...>', cb: (argv) => processInputs(argv.inputs, runSeed) },
-  create: { describe: 'Create a .torrent file', template: '<input>', cb: (argv) => runCreate(argv.input) },
-  info: { describe: 'Show info for .torrent file or magner uri', template: '<torrent-id>', cb: (argv) => runInfo(argv.torrentId) },
-  version: { describe: 'Show version information', cb: runVersion },
-  help: { describe: 'Show help information', cb: runHelp }
-}
-
-let client, href, server, serving, playerName, subtitlesServer, drawInterval
-let expectedError; let gracefullyExiting = false
+let client, href, server, serving, playerName, subtitlesServer, drawInterval, helpOutput
+let expectedError = false
+let gracefullyExiting = false
 let torrentCount = 1
-
-const argv = (() => {
-  try {
-    return minimistPrettyParse(process.argv.slice(2), Object.assign({}, options.streaming, options.simple, options.advanced), commands)
-  } catch (err) {
-    errorAndExit(err)
-  }
-})()
+let argv = {}
 
 process.title = 'WebTorrent'
 
@@ -118,11 +103,70 @@ process.on('SIGTERM', gracefulExit)
 
 // #endregion
 
+// #region Yargs configuration
+
+yargs
+  .scriptName('webtorrent')
+  .usage(
+    stripIndent`
+    Usage:
+      webtorrent [command] <torrent-id> [options]
+
+    Examples:
+      webtorrent download "magnet:..." --vlc
+      webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
+
+    Specify <torrent-id> as one of:
+      * magnet uri
+      * http url to .torrent file
+      * filesystem path to .torrent file
+      * info hash (hex string)
+    `)
+  .alias({ h: 'help', v: 'version' })
+  .locale('en')
+  .version(`${webTorrentCliVersion} (${webTorrentVersion})`)
+  .fail((msg, err) => { clivas.line(`\n{red:Error:} ${msg}`); process.exit(1) })
+
+yargs.command('$0 [torrent-ids...]', false, {}, (args) => { if (args.torrentIds) processInputs(args.torrentIds, runDownload); else runHelp() })
+yargs.command('download <torrent-ids...>', 'Download a torrent', {}, (args) => { processInputs(args.torrentIds, runDownload) })
+yargs.command('downloadmeta <torrent-ids...>', 'Download metadata of torrent', {}, (args) => { processInputs(args.torrentIds, runDownloadMeta) })
+yargs.command('seed <inputs...>', 'Seed a file or a folder', {}, (args) => { processInputs(args.inputs, runSeed) })
+yargs.command('create <input>', 'Create a .torrent file', {}, (args) => { runCreate(args.input) })
+yargs.command('info <torrent-id>', 'Show info for .torrent file or magner uri', {}, (args) => { runInfo(args.torrentId) })
+yargs.command('version', 'Show version information', {}, () => { process.stdout.write(`${webTorrentCliVersion} (${webTorrentVersion})`) })
+yargs.command('help', 'Show help information', {}, () => { runHelp() })
+
+yargs.options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
+yargs.options(options.simple).group(Object.keys(options.simple).concat(['help', 'version']), 'Options (simple): ')
+yargs.options(options.advanced).group(Object.keys(options.advanced), 'Options (advanced)')
+
+// hidden options
+yargs.options({
+  quit: { hidden: true, default: true }
+})
+
+// Very important to save help output.
+// Otherwise, when run from yargs.command() callback it will be incomplete (missing all commands)
+yargs.parse(['--help'], (_err, _argv, _output) => { helpOutput = _output })
+
+// Yargs pipeline: middleware(callback) -> [process.argv gets parsed] -> command(callback) -> yargs.parse(callback)
+// Note: built-in help command does not trigger callback from parser
+yargs.middleware(init)
+
+yargs
+  .help(false)
+  .strict()
+  .parse(process.argv.slice(2), { startTime: Date.now() })
+
+// #endregion
+
 // #region Core functions
 
-function main () {
-  if (argv.help || argv.version) { argv.help ? runHelp() : runVersion(); return }
+function init (_argv) {
+  if (_argv.help || _argv._.includes('help')) runHelp()
+  else if (_argv.version) return
 
+  argv = _argv
   playerArgs.omx.push(typeof argv.omx === 'string' ? argv.omx : 'hdmi')
 
   if (process.env.DEBUG) {
@@ -132,7 +176,6 @@ function main () {
     enableQuiet()
   }
 
-  const command = argv._[0]
   const selectedPlayers = Object.keys(argv).filter(v => Object.keys(options.streaming).includes(v))
   playerName = selectedPlayers.length === 1 ? selectedPlayers[0] : null
 
@@ -174,79 +217,12 @@ function main () {
   if (playerName && argv.playerArgs) {
     playerArgs[playerName].push(...argv.playerArgs.split(' '))
   }
-
-  if (Object.keys(commands).includes(command)) {
-    commands[command].cb(argv)
-  } else {
-    commands['*'].cb(argv)
-  }
 }
 
-function runVersion () {
-  console.log(`${webTorrentCliVersion} (${webTorrentVersion})`)
-}
-
-function runHelp () {
-  const maxColumnWidth = 30
-
-  function commandsSection () {
-    let res = '\n\nCommands:\n  '
-    for (const command in commands) {
-      const columnWidth = (command + ' ' + (commands[command].template || '')).length
-      if (command !== '*' && commands[command].describe) {
-        res += `${command} ${commands[command].template || ''}${' '.repeat(maxColumnWidth - columnWidth)}${commands[command].describe}\n  `
-      }
-    }
-    return res + '\n'
-  }
-
-  function optionsSection () {
-    let res = '\n'
-    for (const optionGroup in options) {
-      res += `\nOptions (${optionGroup}):\n  `
-      for (const option in options[optionGroup]) {
-        const attributes = options[optionGroup][option]
-        if (attributes.describe) {
-          let columnWidth = ('--' + option).length
-          let defaultValue = ''
-          let argumentDescription = ''
-          if (attributes.alias) {
-            const aliasString = `${'-' + attributes.alias}, `
-            res += aliasString
-            columnWidth += aliasString.length
-          }
-          if (attributes.defaultDescription) { defaultValue = '[default: ' + attributes.defaultDescription + ']' } else if (attributes.default) { defaultValue = '[default: ' + attributes.default + ']' }
-          if (defaultValue !== '' || attributes.type) { argumentDescription = ' [' + (attributes.argumentDescription || (attributes.default ? typeof attributes.default : undefined) || attributes.type || typeof attributes.defaultDescription) + ']' }
-          columnWidth += argumentDescription.length
-          res += `${'--' + option}${argumentDescription}${' '.repeat(maxColumnWidth - columnWidth)}${attributes.describe} ${defaultValue}\n  `
-        }
-      }
-    }
-    return res + '\n'
-  }
-
-  fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
-    .split('\n')
-    .forEach(line => clivas.line(
-            `{bold:${line.substring(0, 20)}}{red:${line.substring(20)}}`))
-  console.log(stripIndent`
-    Usage:
-      webtorrent [command] <torrent-id> <options>
-
-    Example:
-      webtorrent download "magnet:..." --vlc
-      webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
-    ` +
-    commandsSection() +
-    stripIndent`
-    Specify <torrent-id> as one of:
-      * magnet uri
-      * http url to .torrent file
-      * filesystem path to .torrent file
-      * info hash (hex string)
-    ` +
-    optionsSection()
-  )
+function runHelp (shouldExit = true) {
+  printLogo()
+  process.stdout.write(`${helpOutput}\n`)
+  if (shouldExit) process.exit(0)
 }
 
 function runInfo (torrentId) {
@@ -314,10 +290,6 @@ function runDownload (torrentId) {
     announce: argv.announce
   })
 
-  if (argv.verbose) {
-    torrent.on('warning', handleWarning)
-  }
-
   torrent.on('infoHash', () => {
     if ('select' in argv) {
       torrent.so = argv.select.toString()
@@ -355,7 +327,7 @@ function runDownload (torrentId) {
       clivas.line('')
       clivas.line(
         'torrent downloaded {green:successfully} from {bold:%s/%s} {green:peers} ' +
-                'in {bold:%ss}!', numActiveWires, torrent.numPeers, getRuntime()
+        'in {bold:%ss}!', numActiveWires, torrent.numPeers, getRuntime()
       )
     }
 
@@ -489,10 +461,10 @@ function runDownload (torrentId) {
 
       chromecasts.on('update', player => {
         if (
-        // If there are no named chromecasts supplied, play on all devices
+          // If there are no named chromecasts supplied, play on all devices
           argv.chromecast === true ||
-                    // If there are named chromecasts, check if this is one of them
-                    [].concat(argv.chromecast).find(name => player.name.toLowerCase().includes(name.toLowerCase()))
+          // If there are named chromecasts, check if this is one of them
+          [].concat(argv.chromecast).find(name => player.name.toLowerCase().includes(name.toLowerCase()))
         ) {
           player.play(href, opts)
 
@@ -523,7 +495,7 @@ function runDownload (torrentId) {
         if (argv.subtitles) {
           subtitlesServer.listen(0, () => {
             opts.subtitles = [
-                            `http://${networkAddress()}:${subtitlesServer.address().port}/${encodeURIComponent(path.basename(argv.subtitles))}`
+              `http://${networkAddress()}:${subtitlesServer.address().port}/${encodeURIComponent(path.basename(argv.subtitles))}`
             ]
             play()
           })
@@ -608,8 +580,9 @@ function runSeed (input) {
     announce: argv.announce
   }, torrent => {
     if (argv.quiet) {
-      console.log(torrent.magnetURI)
+      process.stdout.write(torrent.magnetURI)
     }
+
     drawTorrent(torrent)
   })
 }
@@ -667,21 +640,21 @@ function drawTorrent (torrent) {
     }
 
     line(`{green:Speed: }{bold:${prettierBytes(speed)
-            }/s} {green:Downloaded:} {bold:${prettierBytes(torrent.downloaded)
-            }}/{bold:${prettierBytes(torrent.length)}} {green:Uploaded:} {bold:${prettierBytes(torrent.uploaded)
-            }}`)
+      }/s} {green:Downloaded:} {bold:${prettierBytes(torrent.downloaded)
+      }}/{bold:${prettierBytes(torrent.length)}} {green:Uploaded:} {bold:${prettierBytes(torrent.uploaded)
+      }}`)
 
     line(`{green:Running time:} {bold:${runtime
-            }}  {green:Time remaining:} {bold:${estimate
-            }}  {green:Peers:} {bold:${unchoked.length
-            }/${torrent.numPeers
-            }}`)
+      }}  {green:Time remaining:} {bold:${estimate
+      }}  {green:Peers:} {bold:${unchoked.length
+      }/${torrent.numPeers
+      }}`)
 
     if (argv.verbose) {
       line(`{green:Queued peers:} {bold:${torrent._numQueued
-                }}  {green:Blocked peers:} {bold:${blockedPeers
-                }}  {green:Hotswaps:} {bold:${hotswaps
-                }}`)
+        }}  {green:Blocked peers:} {bold:${blockedPeers
+        }}  {green:Hotswaps:} {bold:${hotswaps
+        }}`)
     }
 
     line('')
@@ -770,10 +743,6 @@ function torrentDone (torrent) {
   }
 }
 
-function handleWarning (err) {
-  console.warn(`Warning: ${err.message || err}`)
-}
-
 function fatalError (err) {
   clivas.line(`{red:Error:} ${err.message || err}`)
   process.exit(1)
@@ -844,120 +813,33 @@ function getRuntime () {
 function processInputs (inputs, fn) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
-  if (Array.isArray(inputs)) {
-    if (inputs.length > 1) {
-      const invalidArguments = [
-        'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
-        'stdout', 'select', 'subtitles'
-      ]
+  if (inputs.length > 1) {
+    const invalidArguments = [
+      'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
+      'stdout', 'select', 'subtitles'
+    ]
 
-      invalidArguments.forEach(arg => {
-        if (argv[arg]) {
-          return errorAndExit(new Error(
-                            `The --${arg} argument cannot be used with multiple files/folders.`
-          ))
-        }
-      })
-      torrentCount = inputs.length
-      enableQuiet()
-    } else {
-      fn(inputs[0])
-    }
+    invalidArguments.forEach(arg => {
+      if (argv[arg]) {
+        return errorAndExit(new Error(
+          `The --${arg} argument cannot be used with multiple files/folders.`
+        ))
+      }
+    })
+    torrentCount = inputs.length
+    enableQuiet()
   }
+
+  inputs.forEach(input => {
+    fn(input)
+  })
 }
 
-function minimistPrettyParse (argv, options, commands) {
-  // Options which can be either a string or a boolean
-  const anyTypeOptions = []
-
-  // Parse argv with minimist
-  const result = minimist(argv, options ? buildOptions() : {})
-
-  // Post processing on the parsed results
-  anyTypeOptions.forEach((key) => { result[key] = (result[key] === undefined ? false : result[key] === '' ? true : result[key]) })
-
-  // Parse argument templates in the commands variable
-  if (commands) parseTemplates()
-
-  function buildOptions () {
-    const minimistOpts = { alias: {}, boolean: [], string: [], default: {} }
-    for (const [optionKey, optionValue] of Object.entries(options)) {
-      if (optionValue.alias) {
-        minimistOpts.alias[optionValue.alias] = optionKey
-      }
-      if (optionValue.default) {
-        minimistOpts.default[optionKey] = optionValue.default
-      }
-      if (optionKey.includes('no-')) {
-        minimistOpts.default[optionKey.replace('no-', '')] = true
-      }
-      if (optionKey.match(/^[a-zA-Z]+((-|_){1}[a-zA-Z]+)+$/g)) {
-        minimistOpts.alias[optionKey.replace(/[_-]([a-z])/g, (_, w) => w.toUpperCase())] = optionKey
-      }
-
-      if (optionValue.type || optionValue.default) {
-        const type = optionValue.default ? typeof optionValue.default : optionValue.type
-        if (type === 'boolean') {
-          minimistOpts.boolean.push(optionKey)
-        } else {
-          if (type === 'any') {
-            anyTypeOptions.push(optionKey)
-          }
-          minimistOpts.string.push(optionKey)
-        }
-      } else {
-        minimistOpts.boolean.push(optionKey)
-      }
-    }
-    return minimistOpts
-  }
-
-  function parseTemplates () {
-    const isDefault = !Object.keys(commands).includes(result._[0])
-    const command = isDefault ? '*' : result._[0]
-
-    if (commands[command].template) {
-      const template = commands[command].template.includes(' ') ? commands[commands].template.split(' ') : [commands[command].template]
-      let previousIsOptionalArg = false
-      const preset = isDefault ? 0 : 1
-      for (let index = 0; index < template.length; index++) {
-        const argument = template[index].match(/^(<(?=.+>)|\[(?=.+\]))([\w+-]+(\.\.\.)?)[>\]]$/g)
-        if (!argument) throw new Error(`Invalid argument: '${template[index]}'`)
-
-        const isArray = !!argument[0].match(/\.\.\./g)
-        const argumentIsRequired = !!argument[0].match(/^<.+>$/g)
-        const argumentName = argument[0].match(/[\w-]+/g)[0]
-        if ((isArray && index !== template.length - 1) || (previousIsOptionalArg && argumentIsRequired)) {
-          throw new Error(`Invalid argument template for '${command}' command`)
-        } else if (isArray) {
-          if (result._.slice(index + preset).length > 0) {
-            result[argumentName] = result._.slice(index + preset)
-          } else if (argumentIsRequired) {
-            throw new Error(`'${argumentName}' is required for '${command}' command`)
-          }
-        } else {
-          if (index === template.length - 1 && index + preset < result._.length - 1) {
-            throw new Error(`Too many arguments were given to '${command}' command`)
-          }
-          if (result._[index + preset]) {
-            result[argumentName] = result._[index + preset]
-          } else if (argumentIsRequired) {
-            throw new Error(`'${argumentName}' argument is required for '${command}' command`)
-          }
-        }
-        if (argumentName.match(/^[a-zA-Z]+((-|_){1}[a-zA-Z]+)+$/g)) {
-          result[argumentName.replace(/[_-]([a-z])/g, (_, w) => w.toUpperCase())] = result[argumentName]
-        }
-        if (!argumentIsRequired) previousIsOptionalArg = true
-      }
-    } else if ((result._.length > 1 && !isDefault) || (result._.length > 0 && isDefault)) {
-      throw new Error('Was not expecting arguments')
-    }
-  }
-  return result
+function printLogo () {
+  fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
+    .split('\n')
+    .forEach(line => clivas.line(
+      `{bold:${line.substring(0, 20)}}{red:${line.substring(20)}}`))
 }
+
 // #endregion
-
-if (require.main === module) {
-  main()
-}
