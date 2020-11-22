@@ -290,6 +290,10 @@ function runDownload (torrentId) {
     announce: argv.announce
   })
 
+  if (argv.verbose) {
+    torrent.on('warning', handleWarning)
+  }
+
   torrent.on('infoHash', () => {
     if ('select' in argv) {
       torrent.so = argv.select.toString()
@@ -741,6 +745,10 @@ function torrentDone (torrent) {
       gracefulExit()
     }
   }
+}
+
+function handleWarning (err) {
+  console.warn(`Warning: ${err.message || err}`)
 }
 
 function fatalError (err) {
