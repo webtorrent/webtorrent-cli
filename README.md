@@ -89,7 +89,7 @@ Commands:
 
 Options (streaming):
       --airplay     Apple TV
-      --chromecast  Google Chromecast
+      --chromecast  Google Chromecast                            [default: name]
       --dlna        DNLA
       --mplayer     MPlayer
       --mpv         MPV
@@ -101,8 +101,7 @@ Options (streaming):
 
 Options (simple):
   -o, --out        Set download destination         [default: current directory]
-  -s, --select     Select specific file in torrent (omit index for file list)
-                                                                        [number]
+  -s, --select     Select specific file in torrent                      [number]
   -t, --subtitles  Load subtitles file                                  [string]
   -h, --help       Show help                                           [boolean]
   -v, --version    Show version number                                 [boolean]
@@ -112,16 +111,16 @@ Options (advanced)
   -b, --blocklist     Load blocklist file/url                           [string]
   -a, --announce      Tracker URL to announce to                        [string]
   -q, --quiet         Don't show UI on stdout
+      --pip           Enter Picture-in-Picture if supported by the player
+      --verbose       Show torrent protocol details
+      --player-args   Add player specific arguments (see example)       [string]
       --torrent-port  Change the torrent seeding port          [default: random]
       --dht-port      Change the dht port                      [default: random]
-      --pip           Enter Picture-in-Picture if supported by the player
       --not-on-top    Don't set "always on top" option in player
       --keep-seeding  Don't quit when done downloading
       --no-quit       Don't quit when player exits
       --on-done       Run script after torrent download is done
       --on-exit       Run script before program exit
-      --verbose       Show torrent protocol details
-      --player-args   Add player specific arguments (see example)       [string]
 ```
 
 To download a torrent:

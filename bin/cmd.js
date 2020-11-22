@@ -30,7 +30,7 @@ const { version: webTorrentVersion } = require('webtorrent/package.json')
 const options = {
   streaming: {
     airplay: { describe: 'Apple TV' },
-    chromecast: { describe: 'Google Chromecast' },
+    chromecast: { describe: 'Google Chromecast', type: 'string|boolean', defaultDescription: 'name' },
     dlna: { describe: 'DNLA' },
     mplayer: { describe: 'MPlayer' },
     mpv: { describe: 'MPV' },
@@ -42,7 +42,7 @@ const options = {
   },
   simple: {
     out: { describe: 'Set download destination', alias: 'o', defaultDescription: 'current directory', requiresArg: true },
-    select: { describe: 'Select specific file in torrent (omit index for file list)', alias: 's', type: 'number', requiresArg: true },
+    select: { describe: 'Select specific file in torrent', alias: 's', type: 'number', requiresArg: true },
     subtitles: { describe: 'Load subtitles file', alias: 't', type: 'string', requiresArg: true }
   },
   advanced: {
