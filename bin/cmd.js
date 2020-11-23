@@ -78,11 +78,10 @@ const playerArgs = {
   ]
 }
 
-let client, href, server, serving, playerName, subtitlesServer, drawInterval, helpOutput
+let client, href, server, serving, playerName, subtitlesServer, drawInterval, helpOutput, argv
 let expectedError = false
 let gracefullyExiting = false
 let torrentCount = 1
-let argv = {}
 
 process.title = 'WebTorrent'
 
@@ -134,7 +133,9 @@ yargs
 yargs.parse(['--help'], (_err, _argv, _output) => { helpOutput = _output.replace(/^.+\n/g, '') })
 
 // Yargs callback order: middleware(callback) -> command(callback) -> yargs.parse(callback)
-yargs.middleware(init)
+yargs
+  .middleware((_argv) => { argv = _argv })
+  .middleware(init)
 
 yargs
   .strict()
@@ -145,10 +146,9 @@ yargs
 
 // #region Core functions
 
-function init (_argv) {
-  if (_argv.help || _argv.version) { _argv.help ? runHelp() : runVersion(); process.exit(0) }
+function init () {
+  if (argv.help || argv.version) { argv.help ? runHelp() : runVersion(); process.exit(0) }
 
-  argv = _argv
   playerArgs.omx.push(typeof argv.omx === 'string' ? argv.omx : 'hdmi')
 
   if (process.env.DEBUG) {
@@ -326,8 +326,7 @@ function runDownload (torrentId) {
   torrent.on('done', () => {
     torrentCount -= 1
     if (!argv.quiet) {
-      const numActiveWires = torrent.wires
-        .reduce((num, wire) => num + (wire.downloaded > 0), 0)
+      const numActiveWires = torrent.wires.reduce((num, wire) => num + (wire.downloaded > 0), 0)
 
       clivas.line('')
       clivas.line(
@@ -335,20 +334,11 @@ function runDownload (torrentId) {
         'in {bold:%ss}!', numActiveWires, torrent.numPeers, getRuntime()
       )
     }
-
-    torrentDone(torrent)
+    onDone()
   })
 
   // Start http server
   server = torrent.createServer()
-
-  function initServer () {
-    if (torrent.ready) {
-      onReady()
-    } else {
-      torrent.once('ready', onReady)
-    }
-  }
 
   server.listen(argv.port)
     .on('error', err => {
@@ -363,6 +353,27 @@ function runDownload (torrentId) {
 
   server.once('listening', initServer)
   server.once('connection', () => (serving = true))
+
+  function initServer () {
+    if (torrent.ready) {
+      onReady()
+    } else {
+      torrent.once('ready', onReady)
+    }
+  }
+
+  function onDone () {
+    if (argv['on-done']) {
+      cp.exec(argv['on-done']).unref()
+    }
+    if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
+      torrent.destroy()
+
+      if (torrentCount === 0) {
+        gracefulExit()
+      }
+    }
+  }
 
   function onReady () {
     if (typeof argv.select === 'boolean') {
@@ -515,7 +526,6 @@ function runDownload (torrentId) {
         }
       })
     }
-
     drawTorrent(torrent)
   }
 }
@@ -733,19 +743,6 @@ function drawTorrent (torrent) {
     function line (...args) {
       clivas.line(...args)
       linesRemaining -= 1
-    }
-  }
-}
-
-function torrentDone (torrent) {
-  if (argv['on-done']) {
-    cp.exec(argv['on-done']).unref()
-  }
-  if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
-    torrent.destroy()
-
-    if (torrentCount === 0) {
-      gracefulExit()
     }
   }
 }
