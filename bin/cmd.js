@@ -334,7 +334,16 @@ function runDownload (torrentId) {
         'in {bold:%ss}!', numActiveWires, torrent.numPeers, getRuntime()
       )
     }
-    onDone()
+    if (argv['on-done']) {
+      cp.exec(argv['on-done']).unref()
+    }
+    if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
+      torrent.destroy()
+
+      if (torrentCount === 0) {
+        gracefulExit()
+      }
+    }
   })
 
   // Start http server
@@ -359,19 +368,6 @@ function runDownload (torrentId) {
       onReady()
     } else {
       torrent.once('ready', onReady)
-    }
-  }
-
-  function onDone () {
-    if (argv['on-done']) {
-      cp.exec(argv['on-done']).unref()
-    }
-    if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
-      torrent.destroy()
-
-      if (torrentCount === 0) {
-        gracefulExit()
-      }
     }
   }
 
