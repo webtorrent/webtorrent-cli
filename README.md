@@ -89,7 +89,7 @@ Commands:
 
 Options (streaming):
       --airplay     Apple TV
-      --chromecast  Google Chromecast                            [default: name]
+      --chromecast  Google Chromecast                             [default: all]
       --dlna        DNLA
       --mplayer     MPlayer
       --mpv         MPV
@@ -103,8 +103,8 @@ Options (simple):
   -o, --out        Set download destination         [default: current directory]
   -s, --select     Select specific file in torrent                      [number]
   -t, --subtitles  Load subtitles file                                  [string]
-  -h, --help       Show help                                           [boolean]
-  -v, --version    Show version number                                 [boolean]
+  -h, --help       Show help information                               [boolean]
+  -v, --version    Show version information                            [boolean]
 
 Options (advanced)
   -p, --port          Change the http server port                [default: 8000]

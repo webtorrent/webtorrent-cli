@@ -29,38 +29,38 @@ const { version: webTorrentVersion } = require('webtorrent/package.json')
 // Group options into sections (used in yargs configuration)
 const options = {
   streaming: {
-    airplay: { describe: 'Apple TV' },
-    chromecast: { describe: 'Google Chromecast', type: 'string|boolean', defaultDescription: 'all' },
-    dlna: { describe: 'DNLA' },
-    mplayer: { describe: 'MPlayer' },
-    mpv: { describe: 'MPV' },
-    omx: { describe: 'OMX', type: 'string|boolean', defaultDescription: 'hdmi' },
-    vlc: { describe: 'VLC' },
-    iina: { describe: 'IINA' },
-    xbmc: { describe: 'XBMC' },
-    stdout: { describe: 'Standard out (implies --quiet)' }
+    airplay: { desc: 'Apple TV' },
+    chromecast: { desc: 'Google Chromecast', type: 'string|boolean', defaultDescription: 'all' },
+    dlna: { desc: 'DNLA' },
+    mplayer: { desc: 'MPlayer' },
+    mpv: { desc: 'MPV' },
+    omx: { desc: 'OMX', type: 'string|boolean', defaultDescription: 'hdmi' },
+    vlc: { desc: 'VLC' },
+    iina: { desc: 'IINA' },
+    xbmc: { desc: 'XBMC' },
+    stdout: { desc: 'Standard out (implies --quiet)' }
   },
   simple: {
-    out: { describe: 'Set download destination', alias: 'o', defaultDescription: 'current directory', requiresArg: true },
-    select: { describe: 'Select specific file in torrent', alias: 's', type: 'number', requiresArg: true },
-    subtitles: { describe: 'Load subtitles file', alias: 't', type: 'string', requiresArg: true }
+    o: { alias: 'out', desc: 'Set download destination', defaultDescription: 'current directory', requiresArg: true },
+    s: { alias: 'select', desc: 'Select specific file in torrent', type: 'number', requiresArg: true },
+    t: { alias: 'subtitles', desc: 'Load subtitles file', type: 'string', requiresArg: true }
   },
   advanced: {
-    port: { describe: 'Change the http server port', alias: 'p', default: 8000, requiresArg: true },
-    blocklist: { describe: 'Load blocklist file/url', alias: 'b', type: 'string', requiresArg: true },
-    announce: { describe: 'Tracker URL to announce to', alias: 'a', type: 'string', requiresArg: true },
-    quiet: { describe: 'Don\'t show UI on stdout', alias: 'q' },
-    pip: { describe: 'Enter Picture-in-Picture if supported by the player' },
-    verbose: { describe: 'Show torrent protocol details' },
-    'player-args': { describe: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
-    'torrent-port': { describe: 'Change the torrent seeding port', defaultDescription: 'random' },
-    'dht-port': { describe: 'Change the dht port', defaultDescription: 'random' },
-    'not-on-top': { describe: 'Don\'t set "always on top" option in player' },
-    'keep-seeding': { describe: 'Don\'t quit when done downloading' },
-    'no-quit': { describe: 'Don\'t quit when player exits' },
+    p: { alias: 'port', desc: 'Change the http server port', default: 8000, requiresArg: true },
+    b: { alias: 'blocklist', desc: 'Load blocklist file/url', type: 'string', requiresArg: true },
+    a: { alias: 'announce', desc: 'Tracker URL to announce to', type: 'string', requiresArg: true },
+    q: { alias: 'quiet', desc: 'Don\'t show UI on stdout' },
+    pip: { desc: 'Enter Picture-in-Picture if supported by the player' },
+    verbose: { desc: 'Show torrent protocol details' },
+    'player-args': { desc: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
+    'torrent-port': { desc: 'Change the torrent seeding port', defaultDescription: 'random' },
+    'dht-port': { desc: 'Change the dht port', defaultDescription: 'random' },
+    'not-on-top': { desc: 'Don\'t set "always on top" option in player' },
+    'keep-seeding': { desc: 'Don\'t quit when done downloading' },
+    'no-quit': { desc: 'Don\'t quit when player exits' },
     quit: { hidden: true, default: true },
-    'on-done': { describe: 'Run script after torrent download is done', requiresArg: true },
-    'on-exit': { describe: 'Run script before program exit', requiresArg: true }
+    'on-done': { desc: 'Run script after torrent download is done', requiresArg: true },
+    'on-exit': { desc: 'Run script before program exit', requiresArg: true }
   }
 }
 
@@ -108,50 +108,37 @@ process.on('SIGTERM', gracefulExit)
 
 yargs
   .scriptName('webtorrent')
-  .usage(
-    stripIndent`
-    Usage:
-      webtorrent [command] <torrent-id> [options]
-
-    Examples:
-      webtorrent download "magnet:..." --vlc
-      webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
-
-    Specify <torrent-id> as one of:
-      * magnet uri
-      * http url to .torrent file
-      * filesystem path to .torrent file
-      * info hash (hex string)
-    `)
-  .alias({ h: 'help', v: 'version' })
   .locale('en')
-  .version(`${webTorrentCliVersion} (${webTorrentVersion})`)
-  .fail((msg, err) => { clivas.line(`\n{red:Error:} ${msg}`); process.exit(1) })
+  .fail((msg, err) => { clivas.line(`\n{red:Error:} ${msg || err}`); process.exit(1) })
 
-yargs.command('$0 [torrent-ids...]', false, {}, (args) => { if (args.torrentIds) processInputs(args.torrentIds, runDownload); else runHelp() })
-yargs.command('download <torrent-ids...>', 'Download a torrent', {}, (args) => { processInputs(args.torrentIds, runDownload) })
-yargs.command('downloadmeta <torrent-ids...>', 'Download metadata of torrent', {}, (args) => { processInputs(args.torrentIds, runDownloadMeta) })
-yargs.command('seed <inputs...>', 'Seed a file or a folder', {}, (args) => { processInputs(args.inputs, runSeed) })
-yargs.command('create <input>', 'Create a .torrent file', {}, (args) => { runCreate(args.input) })
-yargs.command('info <torrent-id>', 'Show info for .torrent file or magner uri', {}, (args) => { runInfo(args.torrentId) })
-yargs.command('version', 'Show version information', {}, () => { console.log(`${webTorrentCliVersion} (${webTorrentVersion})`) })
-yargs.command('help', 'Show help information', {}, () => { runHelp() })
+yargs
+  .command({ command: '$0 [torrent-ids...]', handler: (args) => { if (args.torrentIds) processInputs(args.torrentIds, runDownload); else runHelp() } })
+  .command({ command: 'download <torrent-ids...>', desc: 'Download a torrent', handler: (args) => { processInputs(args.torrentIds, runDownload) } })
+  .command({ command: 'downloadmeta <torrent-ids...>', desc: 'Download metadata of torrent', handler: (args) => { processInputs(args.torrentIds, runDownloadMeta) } })
+  .command({ command: 'seed <inputs...>', desc: 'Seed a file or a folder', handler: (args) => { processInputs(args.inputs, runSeed) } })
+  .command({ command: 'create <input>', desc: 'Create a .torrent file', handler: (args) => { runCreate(args.input) } })
+  .command({ command: 'info <torrent-id>', desc: 'Show info for .torrent file or magner uri', handler: (args) => { runInfo(args.torrentId) } })
+  .command({ command: 'version', desc: 'Show version information', handler: runVersion })
+  .command({ command: 'help', desc: 'Show help information', handler: runHelp })
 
-yargs.options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
-yargs.options(options.simple).group(Object.keys(options.simple).concat(['help', 'version']), 'Options (simple): ')
-yargs.options(options.advanced).group(Object.keys(options.advanced), 'Options (advanced)')
+yargs
+  .options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
+  .options(options.simple).group(Object.keys(options.simple).concat(['help', 'version']), 'Options (simple): ')
+  .options(options.advanced).group(Object.keys(options.advanced), 'Options (advanced)')
 
-// Very important to save help output.
-// Otherwise, when run from yargs.command() callback it will be incomplete (missing all commands)
-yargs.parse(['--help'], (_err, _argv, _output) => { helpOutput = _output })
+yargs
+  .alias({ h: 'help', v: 'version' })
+  .describe({ help: 'Show help information', version: 'Show version information' })
 
-// Yargs pipeline: middleware(callback) -> [process.argv gets parsed] -> command(callback) -> yargs.parse(callback)
-// Note: built-in help command does not trigger callback from parser
+// Very important to save help output to avoid missing info
+yargs.parse(['--help'], (_err, _argv, _output) => { helpOutput = _output.replace(/^.+\n/g, '') })
+
+// Yargs callback order: middleware(callback) -> command(callback) -> yargs.parse(callback)
 yargs.middleware(init)
 
 yargs
-  .help(false)
   .strict()
+  .help(false).version(false)
   .parse(process.argv.slice(2), { startTime: Date.now() })
 
 // #endregion
@@ -159,8 +146,7 @@ yargs
 // #region Core functions
 
 function init (_argv) {
-  if (_argv.help || _argv._.includes('help')) runHelp()
-  else if (_argv.version) return
+  if (_argv.help || _argv.version) { _argv.help ? runHelp() : runVersion(); process.exit(0) }
 
   argv = _argv
   playerArgs.omx.push(typeof argv.omx === 'string' ? argv.omx : 'hdmi')
@@ -219,7 +205,25 @@ function runHelp () {
   fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
     .split('\n')
     .forEach(line => clivas.line(`{bold:${line.substring(0, 20)}}{red:${line.substring(20)}}`))
-  console.log(`${helpOutput}\n`)
+  console.log(stripIndent`
+  Usage:
+    webtorrent [command] <torrent-id> [options]
+
+  Examples:
+    webtorrent download "magnet:..." --vlc
+    webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
+
+  Specify <torrent-id> as one of:
+    * magnet uri
+    * http url to .torrent file
+    * filesystem path to .torrent file
+    * info hash (hex string)\n\n
+  `)
+  console.log(helpOutput)
+}
+
+function runVersion () {
+  console.log(`${webTorrentCliVersion} (${webTorrentVersion})`)
 }
 
 function runInfo (torrentId) {
