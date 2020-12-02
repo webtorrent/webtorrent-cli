@@ -582,11 +582,12 @@ function runSeed (input) {
     return
   }
 
-  const client = new WebTorrent({
+  client = new WebTorrent({
     blocklist: argv.blocklist,
     torrentPort: argv['torrent-port'],
     dhtPort: argv['dht-port']
   })
+
   client.on('error', fatalError)
 
   client.seed(input, {

@@ -28,7 +28,7 @@
     "parse-torrent": "^9.1.0",
     "prettier-bytes": "^1.0.4",
     "vlc-command": "^1.2.0",
-    "webtorrent": "^0.111.0",
+    "webtorrent": "^0.112.0",
     "yargs": "^16.1.1"
   },
   "devDependencies": {
