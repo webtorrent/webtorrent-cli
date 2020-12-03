@@ -116,7 +116,7 @@ yargs
   .command({ command: 'downloadmeta <torrent-ids...>', desc: 'Download metadata of torrent', handler: (args) => { processInputs(args.torrentIds, runDownloadMeta) } })
   .command({ command: 'seed <inputs...>', desc: 'Seed a file or a folder', handler: (args) => { processInputs(args.inputs, runSeed) } })
   .command({ command: 'create <input>', desc: 'Create a .torrent file', handler: (args) => { runCreate(args.input) } })
-  .command({ command: 'info <torrent-id>', desc: 'Show info for .torrent file or magner uri', handler: (args) => { runInfo(args.torrentId) } })
+  .command({ command: 'info <torrent-id>', desc: 'Show torrent information', handler: (args) => { runInfo(args.torrentId) } })
   .command({ command: 'version', desc: 'Show version information', handler: runVersion })
   .command({ command: 'help', desc: 'Show help information', handler: runHelp })
 

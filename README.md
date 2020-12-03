@@ -82,8 +82,7 @@ Commands:
   webtorrent downloadmeta <torrent-ids...>  Download metadata of torrent
   webtorrent seed <inputs...>               Seed a file or a folder
   webtorrent create <input>                 Create a .torrent file
-  webtorrent info <torrent-id>              Show info for .torrent file or
-                                            magner uri
+  webtorrent info <torrent-id>              Show torrent information
   webtorrent version                        Show version information
   webtorrent help                           Show help information
 
