@@ -30,19 +30,19 @@ const { version: webTorrentVersion } = require('webtorrent/package.json')
 const options = {
   streaming: {
     airplay: { desc: 'Apple TV' },
-    chromecast: { desc: 'Google Chromecast', type: 'string|boolean', defaultDescription: 'all' },
+    chromecast: { desc: 'Google Chromecast', defaultDescription: 'all' },
     dlna: { desc: 'DNLA' },
     mplayer: { desc: 'MPlayer' },
     mpv: { desc: 'MPV' },
-    omx: { desc: 'OMX', type: 'string|boolean', defaultDescription: 'hdmi' },
+    omx: { desc: 'OMX', defaultDescription: 'hdmi' },
     vlc: { desc: 'VLC' },
     iina: { desc: 'IINA' },
     xbmc: { desc: 'XBMC' },
     stdout: { desc: 'Standard out (implies --quiet)' }
   },
   simple: {
-    o: { alias: 'out', desc: 'Set download destination', defaultDescription: 'current directory', requiresArg: true },
-    s: { alias: 'select', desc: 'Select specific file in torrent', type: 'number', requiresArg: true },
+    o: { alias: 'out', desc: 'Set download destination', defaultDescription: 'current directory' },
+    s: { alias: 'select', desc: 'Select specific file in torrent' },
     t: { alias: 'subtitles', desc: 'Load subtitles file', type: 'string', requiresArg: true }
   },
   advanced: {
