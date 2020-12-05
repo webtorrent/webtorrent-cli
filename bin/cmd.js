@@ -3,7 +3,7 @@
 
 // #region Variables
 
-const clivas = require('clivas')
+const chalk = require('chalk')
 const cp = require('child_process')
 const createTorrent = require('create-torrent')
 const ecstatic = require('ecstatic')
@@ -93,9 +93,9 @@ process.on('exit', code => {
   if (code === 0 || expectedError) return // normal exit
   if (code === 130) return // intentional exit with Control-C
 
-  clivas.line('\n{red:UNEXPECTED ERROR:} If this is a bug in WebTorrent, report it!')
-  clivas.line('{green:OPEN AN ISSUE:} https://github.com/webtorrent/webtorrent-cli/issues\n')
-  clivas.line(`DEBUG INFO: webtorrent-cli ${webTorrentCliVersion}, webtorrent ${webTorrentVersion}, node ${process.version}, ${process.platform} ${process.arch}, exit ${code}`)
+  console.log(chalk`\n{red UNEXPECTED ERROR:} If this is a bug in WebTorrent, report it!`)
+  console.log(chalk`{green OPEN AN ISSUE:} https://github.com/webtorrent/webtorrent-cli/issues\n`)
+  console.log(`DEBUG INFO: webtorrent-cli ${webTorrentCliVersion}, webtorrent ${webTorrentVersion}, node ${process.version}, ${process.platform} ${process.arch}, exit ${code}`)
 })
 
 process.on('SIGINT', gracefulExit)
@@ -108,7 +108,7 @@ process.on('SIGTERM', gracefulExit)
 yargs
   .scriptName('webtorrent')
   .locale('en')
-  .fail((msg, err) => { clivas.line(`\n{red:Error:} ${msg || err}`); process.exit(1) })
+  .fail((msg, err) => { console.log(chalk`\n{red Error:} ${msg || err}`); process.exit(1) })
 
 yargs
   .command({ command: '$0 [torrent-ids...]', handler: (args) => { if (args.torrentIds) processInputs(args.torrentIds, runDownload); else runHelp() } })
@@ -204,7 +204,7 @@ function init () {
 function runHelp () {
   fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
     .split('\n')
-    .forEach(line => clivas.line(`{bold:${line.substring(0, 20)}}{red:${line.substring(20)}}`))
+    .forEach(line => console.log(chalk`{bold ${line.substring(0, 20)}}{red ${line.substring(20)}}`))
   console.log(stripIndent`
   Usage:
     webtorrent [command] <torrent-id> [options]
@@ -310,20 +310,16 @@ function runDownload (torrentId) {
     torrent.on('wire', updateMetadata)
 
     function updateMetadata () {
-      clivas.clear()
-
-      clivas.line(
-        '{green:fetching torrent metadata from} {bold:%s} {green:peers}',
-        torrent.numPeers
-      )
+      console.clear()
+      console.log(chalk`{green fetching torrent metadata from} {bold ${torrent.numPeers}} {green peers}`)
     }
 
     torrent.on('metadata', () => {
-      clivas.clear()
+      console.clear()
       torrent.removeListener('wire', updateMetadata)
 
-      clivas.clear()
-      clivas.line('{green:verifying existing torrent data...}')
+      console.clear()
+      console.log(chalk`{green verifying existing torrent data...}`)
     })
   })
 
@@ -332,11 +328,7 @@ function runDownload (torrentId) {
     if (!argv.quiet) {
       const numActiveWires = torrent.wires.reduce((num, wire) => num + (wire.downloaded > 0), 0)
 
-      clivas.line('')
-      clivas.line(
-        'torrent downloaded {green:successfully} from {bold:%s/%s} {green:peers} ' +
-        'in {bold:%ss}!', numActiveWires, torrent.numPeers, getRuntime()
-      )
+      console.log(chalk`\ntorrent downloaded {green successfully} from {bold ${numActiveWires}/${torrent.numPeers}} {green peers} in {bold ${getRuntime()}s}!`)
     }
     if (argv['on-done']) {
       cp.exec(argv['on-done']).unref()
@@ -376,16 +368,16 @@ function runDownload (torrentId) {
   }
 
   function onReady () {
-    if (typeof argv.select === 'boolean') {
-      clivas.line('Select a file to download:')
+    if (argv.select && typeof argv.select !== 'number') {
+      console.log('Select a file to download:')
 
-      torrent.files.forEach((file, i) => clivas.line(
-        '{2+bold+magenta:%s} %s {blue:(%s)}',
-        i, file.name, prettierBytes(file.length)
+      torrent.files.forEach((file, i) => console.log(
+        chalk`{bold.magenta %s} %s {blue (%s)}`,
+        i.toString().padEnd(2), file.name, prettierBytes(file.length)
       ))
 
-      clivas.line('\nTo select a specific file, re-run `webtorrent` with "--select [index]"')
-      clivas.line('Example: webtorrent download "magnet:..." --select 0')
+      console.log('\nTo select a specific file, re-run `webtorrent` with "--select [index]"')
+      console.log('Example: webtorrent download "magnet:..." --select 0')
 
       return gracefulExit()
     }
@@ -558,19 +550,16 @@ function runDownloadMeta (torrentId) {
     torrent.on('wire', updateMetadata)
 
     function updateMetadata () {
-      clivas.clear()
-      clivas.line(
-        '{green:fetching torrent metadata from} {bold:%s} {green:peers}',
-        torrent.numPeers
-      )
+      console.clear()
+      console.log(chalk`{green fetching torrent metadata from} {bold ${torrent.numPeers}} {green peers}`)
     }
 
     torrent.on('metadata', function () {
-      clivas.clear()
+      console.clear()
       torrent.removeListener('wire', updateMetadata)
 
-      clivas.clear()
-      clivas.line(`{green:saving the .torrent file data to ${torrentFilePath} ..}`)
+      console.clear()
+      console.log(chalk`{green saving the .torrent file data to ${torrentFilePath} ...}`)
       fs.writeFileSync(torrentFilePath, this.torrentFile)
       gracefulExit()
     })
@@ -607,7 +596,7 @@ function runSeed (input) {
 
 function drawTorrent (torrent) {
   if (!argv.quiet) {
-    process.stdout.write(Buffer.from('G1tIG1sySg==', 'base64')) // clear for drawing
+    console.clear()
     drawInterval = setInterval(draw, 1000)
     drawInterval.unref()
   }
@@ -622,7 +611,7 @@ function drawTorrent (torrent) {
     const unchoked = torrent.wires
       .filter(wire => !wire.peerChoking)
 
-    let linesRemaining = clivas.height
+    let linesRemaining = process.stdout.rows
     let peerslisted = 0
 
     const speed = torrent.downloadSpeed
@@ -636,42 +625,42 @@ function drawTorrent (torrent) {
       : `${runtimeSeconds} seconds`
     const seeding = torrent.done
 
-    clivas.clear()
+    console.clear()
 
-    line(`{green:${seeding ? 'Seeding' : 'Downloading'}: }{bold:${torrent.name}}`)
+    line(chalk`{green ${seeding ? 'Seeding' : 'Downloading'}:} {bold ${torrent.name}}`)
 
-    if (seeding) line(`{green:Info hash: }${torrent.infoHash}`)
+    if (seeding) line(chalk`{green Info hash:} ${torrent.infoHash}`)
 
     const portInfo = []
-    if (argv['torrent-port']) portInfo.push(`{green:Torrent port: }${argv['torrent-port']}`)
-    if (argv['dht-port']) portInfo.push(`{green:DHT port: }${argv['dht-port']}`)
+    if (argv['torrent-port']) portInfo.push(chalk`{green Torrent port:} ${argv['torrent-port']}`)
+    if (argv['dht-port']) portInfo.push(chalk`{green DHT port:} ${argv['dht-port']}`)
     if (portInfo.length) line(portInfo.join(' '))
 
     if (playerName) {
-      line(`{green:Streaming to: }{bold:${playerName}}  {green:Server running at: }{bold:${href}}`)
+      line(chalk`{green Streaming to:} {bold ${playerName}}  {green Server running at:} {bold ${href}}`)
     } else if (server) {
-      line(`{green:Server running at: }{bold:${href}}`)
+      line(chalk`{green Server running at:}{bold ${href}}`)
     }
 
     if (argv.out) {
-      line(`{green:Downloading to: }{bold:${argv.out}}`)
+      line(chalk`{green Downloading to:} {bold ${argv.out}}`)
     }
 
-    line(`{green:Speed: }{bold:${prettierBytes(speed)
-      }/s} {green:Downloaded:} {bold:${prettierBytes(torrent.downloaded)
-      }}/{bold:${prettierBytes(torrent.length)}} {green:Uploaded:} {bold:${prettierBytes(torrent.uploaded)
+    line(chalk`{green Speed:} {bold ${prettierBytes(speed)
+      }/s} {green Downloaded:} {bold ${prettierBytes(torrent.downloaded)
+      }}/{bold ${prettierBytes(torrent.length)}} {green Uploaded:} {bold ${prettierBytes(torrent.uploaded)
       }}`)
 
-    line(`{green:Running time:} {bold:${runtime
-      }}  {green:Time remaining:} {bold:${estimate
-      }}  {green:Peers:} {bold:${unchoked.length
+    line(chalk`{green Running time:} {bold ${runtime
+      }}  {green Time remaining:} {bold ${estimate
+      }}  {green Peers:} {bold ${unchoked.length
       }/${torrent.numPeers
       }}`)
 
     if (argv.verbose) {
-      line(`{green:Queued peers:} {bold:${torrent._numQueued
-        }}  {green:Blocked peers:} {bold:${blockedPeers
-        }}  {green:Hotswaps:} {bold:${hotswaps
+      line(chalk`{green Queued peers:} {bold ${torrent._numQueued
+        }}  {green Blocked peers:} {bold ${blockedPeers
+        }}  {green Hotswaps:} {bold ${hotswaps
         }}`)
     }
 
@@ -696,20 +685,20 @@ function drawTorrent (torrent) {
           : `${Math.floor(100 * bits / piececount)}%`
       }
 
-      let str = '{3:%s} {25+magenta:%s} {10:%s} {12+cyan:%s/s} {12+red:%s/s}'
+      let str = chalk`%s {magenta %s} %s {cyan %s} {red %s}`
 
       const args = [
-        progress,
-        wire.remoteAddress
+        progress.padEnd(3),
+        (wire.remoteAddress
           ? `${wire.remoteAddress}:${wire.remotePort}`
-          : 'Unknown',
-        prettierBytes(wire.downloaded),
-        prettierBytes(wire.downloadSpeed()),
-        prettierBytes(wire.uploadSpeed())
+          : 'Unknown').padEnd(25),
+        prettierBytes(wire.downloaded).padEnd(10),
+        (prettierBytes(wire.downloadSpeed()) + '/s').padEnd(12),
+        (prettierBytes(wire.uploadSpeed()) + '/s').padEnd(12)
       ]
 
       if (argv.verbose) {
-        str += ' {15+grey:%s} {10+grey:%s}'
+        str += chalk` {grey %s} {grey %s}`
 
         const tags = []
 
@@ -724,7 +713,7 @@ function drawTorrent (torrent) {
         const reqStats = wire.requests
           .map(req => req.piece)
 
-        args.push(tags.join(', '), reqStats.join(' '))
+        args.push(tags.join(', ').padEnd(15), reqStats.join(' ').padEnd(10))
       }
 
       line(...[].concat(str, args))
@@ -733,16 +722,14 @@ function drawTorrent (torrent) {
       return linesRemaining > 4
     })
 
-    line('{60:}')
+    line(''.padEnd(60))
 
     if (torrent.numPeers > peerslisted) {
       line('... and %s more', torrent.numPeers - peerslisted)
     }
 
-    clivas.flush(true)
-
     function line (...args) {
-      clivas.line(...args)
+      console.log(...args)
       linesRemaining -= 1
     }
   }
@@ -753,12 +740,12 @@ function handleWarning (err) {
 }
 
 function fatalError (err) {
-  clivas.line(`{red:Error:} ${err.message || err}`)
+  console.log(chalk`{red Error:} ${err.message || err}`)
   process.exit(1)
 }
 
 function errorAndExit (err) {
-  clivas.line(`{red:Error:} ${err.message || err}`)
+  console.log(chalk`{red Error:} ${err.message || err}`)
   expectedError = true
   process.exit(1)
 }
@@ -770,7 +757,7 @@ function gracefulExit () {
 
   gracefullyExiting = true
 
-  clivas.line('\n{green:webtorrent is exiting...}')
+  console.log(chalk`\n{green webtorrent is exiting...}`)
 
   process.removeListener('SIGINT', gracefulExit)
   process.removeListener('SIGTERM', gracefulExit)
