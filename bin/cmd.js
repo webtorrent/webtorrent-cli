@@ -41,7 +41,7 @@ const options = {
     stdout: { desc: 'Standard out (implies --quiet)' }
   },
   simple: {
-    o: { alias: 'out', desc: 'Set download destination', defaultDescription: 'current directory' },
+    o: { alias: 'out', desc: 'Set download destination', type: 'string', requiresArg: true },
     s: { alias: 'select', desc: 'Select specific file in torrent' },
     t: { alias: 'subtitles', desc: 'Load subtitles file', type: 'string', requiresArg: true }
   },
@@ -212,6 +212,10 @@ function runHelp () {
   Examples:
     webtorrent download "magnet:..." --vlc
     webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
+
+  Default output location:
+    * when streaming: Temp folder
+    * when downloading: Current directory
 
   Specify <torrent-id> as one of:
     * magnet uri
@@ -734,8 +738,6 @@ function drawTorrent (torrent) {
     if (torrent.numPeers > peerslisted) {
       line('... and %s more', torrent.numPeers - peerslisted)
     }
-
-    clivas.flush(true)
 
     function line (...args) {
       clivas.line(...args)

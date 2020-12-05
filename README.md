@@ -71,6 +71,10 @@ Examples:
   webtorrent download "magnet:..." --vlc
   webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
 
+Default output location:
+  * when streaming: Temp folder
+  * when downloading: Current directory
+
 Specify <torrent-id> as one of:
   * magnet uri
   * http url to .torrent file
@@ -99,8 +103,8 @@ Options (streaming):
       --stdout      Standard out (implies --quiet)
 
 Options (simple):
-  -o, --out        Set download destination         [default: current directory]
-  -s, --select     Select specific file in torrent                      [number]
+  -o, --out        Set download destination                             [string]
+  -s, --select     Select specific file in torrent
   -t, --subtitles  Load subtitles file                                  [string]
   -h, --help       Show help information                               [boolean]
   -v, --version    Show version information                            [boolean]
