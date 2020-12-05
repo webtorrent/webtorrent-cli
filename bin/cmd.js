@@ -739,6 +739,8 @@ function drawTorrent (torrent) {
       line('... and %s more', torrent.numPeers - peerslisted)
     }
 
+    clivas.flush(true)
+
     function line (...args) {
       clivas.line(...args)
       linesRemaining -= 1
