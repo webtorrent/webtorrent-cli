@@ -202,7 +202,7 @@ function init () {
   }
 
   // Trick to keep scrollable history.
-  if (!argv._.includes('create', 'info') && !argv.quiet) {
+  if (argv._.length > 0 && !['create', 'info'].includes(argv._[0]) && !argv.quiet) {
     console.log('\n'.repeat(process.stdout.rows))
     console.clear()
   }
