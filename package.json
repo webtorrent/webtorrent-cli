@@ -29,7 +29,7 @@
     "prettier-bytes": "^1.0.4",
     "vlc-command": "^1.2.0",
     "webtorrent": "^0.112.0",
-    "yargs": "^16.1.1"
+    "yargs": "^16.2.0"
   },
   "devDependencies": {
     "cross-spawn": "^7.0.3",

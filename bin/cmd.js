@@ -21,6 +21,7 @@ const stripIndent = require('common-tags/lib/stripIndent')
 const vlcCommand = require('vlc-command')
 const WebTorrent = require('webtorrent')
 const yargs = require('yargs')
+const { hideBin } = require('yargs/helpers')
 const open = require('open')
 
 const { version: webTorrentCliVersion } = require('../package.json')
@@ -63,6 +64,17 @@ const options = {
     'on-exit': { desc: 'Run script before program exit', requiresArg: true }
   }
 }
+
+const commands = [
+  { command: '$0 [torrent-ids...]', handler: (args) => { if (args.torrentIds) processInputs(args.torrentIds, runDownload); else runHelp() } },
+  { command: 'download <torrent-ids...>', desc: 'Download a torrent', handler: (args) => { processInputs(args.torrentIds, runDownload) } },
+  { command: 'downloadmeta <torrent-ids...>', desc: 'Download metadata of torrent', handler: (args) => { processInputs(args.torrentIds, runDownloadMeta) } },
+  { command: 'seed <inputs...>', desc: 'Seed a file or a folder', handler: (args) => { processInputs(args.inputs, runSeed) } },
+  { command: 'create <input>', desc: 'Create a .torrent file', handler: (args) => { runCreate(args.input) } },
+  { command: 'info <torrent-id>', desc: 'Show torrent information', handler: (args) => { runInfo(args.torrentId) } },
+  { command: 'version', desc: 'Show version information', handler: runVersion },
+  { command: 'help', desc: 'Show help information', handler: runHelp }
+]
 
 // All command line arguments in one place. (stuff gets added at runtime, e.g. vlc path and omx jack)
 const playerArgs = {
@@ -111,21 +123,10 @@ yargs
   .fail((msg, err) => { console.log(chalk`\n{red Error:} ${msg || err}`); process.exit(1) })
 
 yargs
-  .command({ command: '$0 [torrent-ids...]', handler: (args) => { if (args.torrentIds) processInputs(args.torrentIds, runDownload); else runHelp() } })
-  .command({ command: 'download <torrent-ids...>', desc: 'Download a torrent', handler: (args) => { processInputs(args.torrentIds, runDownload) } })
-  .command({ command: 'downloadmeta <torrent-ids...>', desc: 'Download metadata of torrent', handler: (args) => { processInputs(args.torrentIds, runDownloadMeta) } })
-  .command({ command: 'seed <inputs...>', desc: 'Seed a file or a folder', handler: (args) => { processInputs(args.inputs, runSeed) } })
-  .command({ command: 'create <input>', desc: 'Create a .torrent file', handler: (args) => { runCreate(args.input) } })
-  .command({ command: 'info <torrent-id>', desc: 'Show torrent information', handler: (args) => { runInfo(args.torrentId) } })
-  .command({ command: 'version', desc: 'Show version information', handler: runVersion })
-  .command({ command: 'help', desc: 'Show help information', handler: runHelp })
-
-yargs
+  .command(commands)
   .options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
   .options(options.simple).group(Object.keys(options.simple).concat(['help', 'version']), 'Options (simple): ')
   .options(options.advanced).group(Object.keys(options.advanced), 'Options (advanced)')
-
-yargs
   .alias({ h: 'help', v: 'version' })
   .describe({ help: 'Show help information', version: 'Show version information' })
 
@@ -140,7 +141,7 @@ yargs
 yargs
   .strict()
   .help(false).version(false)
-  .parse(process.argv.slice(2), { startTime: Date.now() })
+  .parse(hideBin(process.argv), { startTime: Date.now() })
 
 // #endregion
 
@@ -198,6 +199,12 @@ function init () {
 
   if (playerName && argv.playerArgs) {
     playerArgs[playerName].push(...argv.playerArgs.split(' '))
+  }
+
+  // Trick to keep scrollable history.
+  if (!argv._.includes('create', 'info') && !argv.quiet) {
+    console.log('\n'.repeat(process.stdout.rows))
+    console.clear()
   }
 }
 
