@@ -66,7 +66,7 @@ const options = {
 }
 
 const commands = [
-  { command: '$0 [torrent-ids...]', handler: (args) => { if (args.torrentIds) processInputs(args.torrentIds, runDownload); else runHelp() } },
+  { command: '$0 [torrent-ids...]', handler: (args) => { processInputs(args.torrentIds, runDownload) } },
   { command: 'download <torrent-ids...>', desc: 'Download a torrent', handler: (args) => { processInputs(args.torrentIds, runDownload) } },
   { command: 'downloadmeta <torrent-ids...>', desc: 'Download metadata of torrent', handler: (args) => { processInputs(args.torrentIds, runDownloadMeta) } },
   { command: 'seed <inputs...>', desc: 'Seed a file or a folder', handler: (args) => { processInputs(args.inputs, runSeed) } },
@@ -148,7 +148,10 @@ yargs
 // #region Core functions
 
 function init () {
-  if (argv.help || argv.version) { argv.help ? runHelp() : runVersion(); process.exit(0) }
+  if (argv.help || argv.version || (argv._.length === 0 && !argv.torrentIds)) {
+    argv.version ? runVersion() : runHelp()
+    process.exit(0)
+  }
 
   playerArgs.omx.push(typeof argv.omx === 'string' ? argv.omx : 'hdmi')
 
@@ -202,7 +205,7 @@ function init () {
   }
 
   // Trick to keep scrollable history.
-  if (argv._.length > 0 && !['create', 'info'].includes(argv._[0]) && !argv.quiet) {
+  if (!['create', 'info'].includes(argv._[0]) && !argv.quiet) {
     console.log('\n'.repeat(process.stdout.rows))
     console.clear()
   }
