@@ -1,3 +1,10 @@
+## [3.2.4](https://github.com/webtorrent/webtorrent-cli/compare/v3.2.3...v3.2.4) (2021-05-31)
+
+
+### Bug Fixes
+
+* **deps:** update dependency open to v8 ([#156](https://github.com/webtorrent/webtorrent-cli/issues/156)) ([aeb104d](https://github.com/webtorrent/webtorrent-cli/commit/aeb104d5e14e9e6bbf76cb56fa0373308761646c))
+
 ## [3.2.3](https://github.com/webtorrent/webtorrent-cli/compare/v3.2.2...v3.2.3) (2021-05-31)
 
 
