@@ -33,12 +33,12 @@
   },
   "devDependencies": {
     "@webtorrent/semantic-release-config": "1.0.3",
-    "cross-spawn": "^7.0.3",
+    "cross-spawn": "7.0.3",
     "semantic-release": "17.4.3",
     "standard": "*",
-    "tape": "^5.0.1",
-    "webtorrent-fixtures": "^1.7.3",
-    "xtend": "^4.0.2"
+    "tape": "5.2.2",
+    "webtorrent-fixtures": "1.7.3",
+    "xtend": "4.0.2"
   },
   "engines": {
     "node": ">=10"
