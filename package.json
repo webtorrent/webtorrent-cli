@@ -41,7 +41,7 @@
     "xtend": "4.0.2"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "homepage": "https://webtorrent.io",
   "keywords": [
