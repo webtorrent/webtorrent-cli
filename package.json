@@ -1,7 +1,7 @@
 {
   "name": "webtorrent-cli",
   "description": "WebTorrent, the streaming torrent client. For the command line.",
-  "version": "3.2.1",
+  "version": "3.2.4",
   "author": {
     "name": "WebTorrent LLC",
     "email": "feross@webtorrent.io",
@@ -24,22 +24,24 @@
     "mime": "^2.4.6",
     "moment": "^2.29.1",
     "network-address": "^1.1.2",
-    "open": "^7.3.0",
-    "parse-torrent": "^9.1.0",
+    "open": "^8.0.0",
+    "parse-torrent": "^9.0.0",
     "prettier-bytes": "^1.0.4",
     "vlc-command": "^1.2.0",
     "webtorrent": "^0.112.0",
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "cross-spawn": "^7.0.3",
-    "standard": "^16.0.3",
-    "tape": "^5.0.1",
-    "webtorrent-fixtures": "^1.7.3",
-    "xtend": "^4.0.2"
+    "@webtorrent/semantic-release-config": "1.0.4",
+    "cross-spawn": "7.0.3",
+    "semantic-release": "17.4.3",
+    "standard": "*",
+    "tape": "5.2.2",
+    "webtorrent-fixtures": "1.7.3",
+    "xtend": "4.0.2"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "homepage": "https://webtorrent.io",
   "keywords": [
@@ -82,5 +84,13 @@
       "type": "consulting",
       "url": "https://feross.org/support"
     }
-  ]
+  ],
+  "renovate": {
+    "extends": [
+      "github>webtorrent/renovate-config"
+    ]
+  },
+  "release": {
+    "extends": "@webtorrent/semantic-release-config"
+  }
 }
