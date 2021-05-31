@@ -32,7 +32,7 @@
     "winreg": "^1.2.4"
   },
   "devDependencies": {
-    "@webtorrent/semantic-release-config": "1.0.3",
+    "@webtorrent/semantic-release-config": "1.0.4",
     "cross-spawn": "7.0.3",
     "semantic-release": "17.4.3",
     "standard": "*",
