@@ -28,8 +28,9 @@
     "parse-torrent": "^9.0.0",
     "prettier-bytes": "^1.0.4",
     "vlc-command": "^1.2.0",
-    "webtorrent": "^0.112.0",
-    "yargs": "^16.2.0"
+    "yargs": "17.0.1",
+    "webtorrent": "^1.0.0",
+    "winreg": "^1.2.4"
   },
   "devDependencies": {
     "@webtorrent/semantic-release-config": "1.0.4",
