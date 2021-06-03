@@ -20,7 +20,7 @@ const prettierBytes = require('prettier-bytes')
 const stripIndent = require('common-tags/lib/stripIndent')
 const vlcCommand = require('vlc-command')
 const WebTorrent = require('webtorrent')
-const yargs = require('yargs')
+const yargs = require('yargs')()
 const { hideBin } = require('yargs/helpers')
 const open = require('open')
 
@@ -72,8 +72,8 @@ const commands = [
   { command: 'seed <inputs...>', desc: 'Seed a file or a folder', handler: (args) => { processInputs(args.inputs, runSeed) } },
   { command: 'create <input>', desc: 'Create a .torrent file', handler: (args) => { runCreate(args.input) } },
   { command: 'info <torrent-id>', desc: 'Show torrent information', handler: (args) => { runInfo(args.torrentId) } },
-  { command: 'version', desc: 'Show version information', handler: runVersion },
-  { command: 'help', desc: 'Show help information', handler: runHelp }
+  { command: 'version', desc: 'Show version information', handler: () => yargs.showVersion('log') },
+  { command: 'help', desc: 'Show help information' } // Implicitly calls showHelp, as a result middleware is not executed
 ]
 
 // All command line arguments in one place. (stuff gets added at runtime, e.g. vlc path and omx jack)
@@ -90,7 +90,7 @@ const playerArgs = {
   ]
 }
 
-let client, href, server, serving, playerName, subtitlesServer, drawInterval, helpOutput, argv
+let client, href, server, serving, playerName, subtitlesServer, drawInterval, argv
 let expectedError = false
 let gracefullyExiting = false
 let torrentCount = 1
@@ -121,36 +121,55 @@ yargs
   .scriptName('webtorrent')
   .locale('en')
   .fail((msg, err) => { console.log(chalk`\n{red Error:} ${msg || err}`); process.exit(1) })
-
+  .usage(
+    fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
+      .split('\n')
+      .map(line => chalk`{bold ${line.substring(0, 20)}}{red ${line.substring(20)}}`)
+      .join('\n')
+      .concat('\n',
+        stripIndent`
+          Usage:
+            webtorrent [command] <torrent-id> [options]
+    
+          Examples:
+            webtorrent download "magnet:..." --vlc
+            webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
+    
+          Default output location:
+            * when streaming: Temp folder
+            * when downloading: Current directory
+    
+          Specify <torrent-id> as one of:
+            * magnet uri
+            * http url to .torrent file
+            * filesystem path to .torrent file
+            * info hash (hex string)\n\n
+        `)
+  )
 yargs
   .command(commands)
   .options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
   .options(options.simple).group(Object.keys(options.simple).concat(['help', 'version']), 'Options (simple): ')
   .options(options.advanced).group(Object.keys(options.advanced), 'Options (advanced)')
-  .alias({ h: 'help', v: 'version' })
-  .describe({ help: 'Show help information', version: 'Show version information' })
-
-// Very important to save help output to avoid missing info
-yargs.parse(['--help'], (_err, _argv, _output) => { helpOutput = _output.replace(/^.+\n/g, '') })
 
 // Yargs callback order: middleware(callback) -> command(callback) -> yargs.parse(callback)
-yargs
-  .middleware((_argv) => { argv = _argv })
-  .middleware(init)
+yargs.middleware(init)
 
 yargs
   .strict()
-  .help(false).version(false)
+  .help('help', 'Show help information')
+  .version('version', 'Show version information', `${webTorrentCliVersion} (${webTorrentVersion})`)
+  .alias({ help: 'h', version: 'v' })
   .parse(hideBin(process.argv), { startTime: Date.now() })
 
 // #endregion
 
 // #region Core functions
 
-function init () {
-  if (argv.help || argv.version || (argv._.length === 0 && !argv.torrentIds)) {
-    argv.version ? runVersion() : runHelp()
-    process.exit(0)
+function init (_argv) {
+  argv = _argv
+  if ((argv._.length === 0 && !argv.torrentIds) || argv._[0] === 'version') {
+    return
   }
 
   playerArgs.omx.push(typeof argv.omx === 'string' ? argv.omx : 'hdmi')
@@ -209,35 +228,6 @@ function init () {
     console.log('\n'.repeat(process.stdout.rows))
     console.clear()
   }
-}
-
-function runHelp () {
-  fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
-    .split('\n')
-    .forEach(line => console.log(chalk`{bold ${line.substring(0, 20)}}{red ${line.substring(20)}}`))
-  console.log(stripIndent`
-  Usage:
-    webtorrent [command] <torrent-id> [options]
-
-  Examples:
-    webtorrent download "magnet:..." --vlc
-    webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
-
-  Default output location:
-    * when streaming: Temp folder
-    * when downloading: Current directory
-
-  Specify <torrent-id> as one of:
-    * magnet uri
-    * http url to .torrent file
-    * filesystem path to .torrent file
-    * info hash (hex string)\n\n
-  `)
-  console.log(helpOutput)
-}
-
-function runVersion () {
-  console.log(`${webTorrentCliVersion} (${webTorrentVersion})`)
 }
 
 function runInfo (torrentId) {
@@ -819,26 +809,28 @@ function getRuntime () {
 function processInputs (inputs, fn) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
-  if (inputs.length > 1) {
-    const invalidArguments = [
-      'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
-      'stdout', 'select', 'subtitles'
-    ]
+  if (inputs) {
+    if (inputs.length > 1) {
+      const invalidArguments = [
+        'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
+        'stdout', 'select', 'subtitles'
+      ]
 
-    invalidArguments.forEach(arg => {
-      if (argv[arg]) {
-        return errorAndExit(new Error(
-          `The --${arg} argument cannot be used with multiple files/folders.`
-        ))
-      }
-    })
-    torrentCount = inputs.length
-    enableQuiet()
+      invalidArguments.forEach(arg => {
+        if (argv[arg]) {
+          return errorAndExit(new Error(
+            `The --${arg} argument cannot be used with multiple files/folders.`
+          ))
+        }
+      })
+      torrentCount = inputs.length
+      enableQuiet()
+    } else if (inputs.length === 1) {
+      fn(inputs[0])
+    }
+  } else {
+    yargs.showHelp('log')
   }
-
-  inputs.forEach(input => {
-    fn(input)
-  })
 }
 
 // #endregion
