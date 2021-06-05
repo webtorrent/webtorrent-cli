@@ -132,7 +132,7 @@ let IINA_EXEC = '/Applications/IINA.app/Contents/MacOS/iina-cli --keep-running'
 let MPLAYER_EXEC = 'mplayer -really-quiet -noidx -loop 0'
 let MPV_EXEC = 'mpv --really-quiet --loop=no'
 let OMX_EXEC = `lxterminal -e omxplayer -r --timeout 60 --no-ghost-box --align center -o ${typeof argv.omx === 'string' ? argv.omx : 'hdmi'}`
-let SMPLAYER_EXEC = `smplayer`
+let SMPLAYER_EXEC = 'smplayer -close-at-end'
 
 let subtitlesServer
 if (argv.subtitles) {
@@ -200,9 +200,9 @@ const playerName = argv.airplay !== false
                 ? 'VLC'
                 : argv.xbmc !== false
                   ? 'XBMC'
-                    : argv.smplayer !== false
-                      ? 'SMPLAYER'
-                        : null
+                  : argv.smplayer !== false
+                    ? 'SMPLAYER'
+                    : null
 
 const command = argv._[0]
 
