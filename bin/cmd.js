@@ -66,8 +66,7 @@ const options = {
 }
 
 const commands = [
-  { command: '$0 [torrent-ids...]', handler: (args) => { processInputs(args.torrentIds, runDownload) } },
-  { command: 'download <torrent-ids...>', desc: 'Download a torrent', handler: (args) => { processInputs(args.torrentIds, runDownload) } },
+  { command: ['download [torrent-ids...]', '$0'], desc: 'Download a torrent', handler: (args) => { processInputs(args.torrentIds, runDownload) } },
   { command: 'downloadmeta <torrent-ids...>', desc: 'Download metadata of torrent', handler: (args) => { processInputs(args.torrentIds, runDownloadMeta) } },
   { command: 'seed <inputs...>', desc: 'Seed a file or a folder', handler: (args) => { processInputs(args.inputs, runSeed) } },
   { command: 'create <input>', desc: 'Create a .torrent file', handler: (args) => { runCreate(args.input) } },

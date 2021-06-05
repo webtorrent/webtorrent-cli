@@ -82,7 +82,7 @@ Specify <torrent-id> as one of:
   * info hash (hex string)
 
 Commands:
-  webtorrent download <torrent-ids...>      Download a torrent
+  webtorrent download [torrent-ids...]      Download a torrent         [default]
   webtorrent downloadmeta <torrent-ids...>  Download metadata of torrent
   webtorrent seed <inputs...>               Seed a file or a folder
   webtorrent create <input>                 Create a .torrent file
