@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 'use strict'
 
-// #region Variables
-
 const chalk = require('chalk')
 const cp = require('child_process')
 const createTorrent = require('create-torrent')
@@ -96,10 +94,6 @@ let torrentCount = 1
 
 process.title = 'WebTorrent'
 
-// #endregion
-
-// #region Event listeners
-
 process.on('exit', code => {
   if (code === 0 || expectedError) return // normal exit
   if (code === 130) return // intentional exit with Control-C
@@ -111,10 +105,6 @@ process.on('exit', code => {
 
 process.on('SIGINT', gracefulExit)
 process.on('SIGTERM', gracefulExit)
-
-// #endregion
-
-// #region Yargs configuration
 
 yargs
   .scriptName('webtorrent')
@@ -160,10 +150,6 @@ yargs
   .version('version', 'Show version information', `${webTorrentCliVersion} (${webTorrentVersion})`)
   .alias({ help: 'h', version: 'v' })
   .parse(hideBin(process.argv), { startTime: Date.now() })
-
-// #endregion
-
-// #region Core functions
 
 function init (_argv) {
   argv = _argv
@@ -831,5 +817,3 @@ function processInputs (inputs, fn) {
     yargs.showHelp('log')
   }
 }
-
-// #endregion
