@@ -1,3 +1,10 @@
+# [3.3.0](https://github.com/webtorrent/webtorrent-cli/compare/v3.2.4...v3.3.0) (2021-06-08)
+
+
+### Features
+
+* add support for SMPlayer ([#154](https://github.com/webtorrent/webtorrent-cli/issues/154)) ([875d035](https://github.com/webtorrent/webtorrent-cli/commit/875d035538c1f6cc22353c8e00e685e622af2f54))
+
 ## [3.2.4](https://github.com/webtorrent/webtorrent-cli/compare/v3.2.3...v3.2.4) (2021-05-31)
 
 
