@@ -99,6 +99,7 @@ Options (streaming):
       --omx         OMX                                          [default: hdmi]
       --vlc         VLC
       --iina        IINA
+      --smplayer    SMPlayer
       --xbmc        XBMC
       --stdout      Standard out (implies --quiet)
 

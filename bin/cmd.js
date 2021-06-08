@@ -36,6 +36,7 @@ const options = {
     omx: { desc: 'OMX', defaultDescription: 'hdmi' },
     vlc: { desc: 'VLC' },
     iina: { desc: 'IINA' },
+    smplayer: { desc: 'SMPlayer' },
     xbmc: { desc: 'XBMC' },
     stdout: { desc: 'Standard out (implies --quiet)' }
   },
@@ -79,6 +80,7 @@ const playerArgs = {
   iina: ['/Applications/IINA.app/Contents/MacOS/iina-cli', '--keep-running'],
   mpv: ['mpv', '--really-quiet', '--loop=no'],
   mplayer: ['mplayer', '-really-quiet', '-noidx', '-loop', '0'],
+  smplayer: ['smplayer -close-at-end'],
   omx: [
     'lxterminal', '-e',
     'omxplayer', '-r',
@@ -176,6 +178,7 @@ function init (_argv) {
     playerArgs.mplayer.push(`-sub ${subtitles}`)
     playerArgs.mpv.push(`--sub-file=${subtitles}`)
     playerArgs.omx.push(`--subtitles ${subtitles}`)
+    playerArgs.smplayer.push(`-sub ${subtitles}`)
 
     subtitlesServer = http.createServer(ecstatic({
       root: path.dirname(argv.subtitles),
@@ -192,6 +195,7 @@ function init (_argv) {
     playerArgs.vlc.push('--video-on-top')
     playerArgs.mplayer.push('-ontop')
     playerArgs.mpv.push('--ontop')
+    playerArgs.smplayer.push('-ontop')
   }
 
   if (argv.onDone) {
@@ -410,6 +414,8 @@ function runDownload (torrentId) {
       openPlayer(playerArgs.mpv.concat(JSON.stringify(href)))
     } else if (argv.omx) {
       openPlayer(playerArgs.omx.concat(JSON.stringify(href)))
+    } else if (argv.smplayer) {
+      openPlayer(playerArgs.smplayer.concat(JSON.stringify(href)))
     }
 
     function openPlayer (args) {
@@ -798,7 +804,7 @@ function processInputs (inputs, fn) {
     if (inputs.length > 1) {
       const invalidArguments = [
         'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
-        'stdout', 'select', 'subtitles'
+        'stdout', 'select', 'subtitles', 'smplayer'
       ]
 
       invalidArguments.forEach(arg => {
