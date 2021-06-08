@@ -62,6 +62,7 @@ const argv = minimist(process.argv.slice(2), {
     'mpv',
     'vlc',
     'xbmc',
+    'smplayer',
 
     // Options (simple)
     'help',
@@ -131,6 +132,7 @@ let IINA_EXEC = '/Applications/IINA.app/Contents/MacOS/iina-cli --keep-running'
 let MPLAYER_EXEC = 'mplayer -really-quiet -noidx -loop 0'
 let MPV_EXEC = 'mpv --really-quiet --loop=no'
 let OMX_EXEC = `lxterminal -e omxplayer -r --timeout 60 --no-ghost-box --align center -o ${typeof argv.omx === 'string' ? argv.omx : 'hdmi'}`
+let SMPLAYER_EXEC = 'smplayer -close-at-end'
 
 let subtitlesServer
 if (argv.subtitles) {
@@ -140,6 +142,7 @@ if (argv.subtitles) {
   MPLAYER_EXEC += ` -sub ${subtitles}`
   MPV_EXEC += ` --sub-file=${subtitles}`
   OMX_EXEC += ` --subtitles ${subtitles}`
+  SMPLAYER_EXEC += ` -sub ${subtitles}`
 
   subtitlesServer = http.createServer(ecstatic({
     root: path.dirname(argv.subtitles),
@@ -156,6 +159,7 @@ if (!argv['not-on-top']) {
   VLC_ARGS += ' --video-on-top'
   MPLAYER_EXEC += ' -ontop'
   MPV_EXEC += ' --ontop'
+  SMPLAYER_EXEC += ' -ontop'
 }
 
 function checkPermission (filename) {
@@ -196,7 +200,9 @@ const playerName = argv.airplay !== false
                 ? 'VLC'
                 : argv.xbmc !== false
                   ? 'XBMC'
-                  : null
+                  : argv.smplayer !== false
+                    ? 'SMPLAYER'
+                    : null
 
 const command = argv._[0]
 
@@ -250,7 +256,7 @@ function processInputs (inputs) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
   const invalidArguments = [
-    'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
+    'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc', 'smplayer',
     'stdout', 'select', 'subtitles'
   ]
 
@@ -305,6 +311,7 @@ function runHelp () {
       --omx [jack]              omx [default: hdmi]
       --vlc                     VLC
       --xbmc                    XBMC
+      --smplayer                SMPlayer
 
       Options (simple):
       -o, --out [path]          set download destination [default: current directory]
@@ -540,6 +547,8 @@ function runDownload (torrentId) {
       openPlayer(`${MPV_EXEC} "${href}"`)
     } else if (argv.omx) {
       openPlayer(`${OMX_EXEC} "${href}"`)
+    } else if (argv.smplayer) {
+      openPlayer(`${SMPLAYER_EXEC} "${href}"`)
     }
 
     function openPlayer (cmd) {
