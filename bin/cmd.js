@@ -70,7 +70,7 @@ const argv = minimist(process.argv.slice(2), {
 
     // Options (advanced)
     'stdout',
-    'play-all',
+    'playlist',
     'quiet',
     'pip',
     'not-on-top',
@@ -325,7 +325,7 @@ function runHelp () {
 
       Options (advanced):
       --stdout                  standard out (implies --quiet)
-      --play-all                open all files if supported by the player
+      --playlist                open all files if supported by the player
       -p, --port [number]       change the http server port [default: 8000]
       -a, --announce [url]      tracker URL to announce to
       -b, --blocklist [path]    load blocklist file/http url
@@ -521,16 +521,17 @@ function runDownload (torrentId) {
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
     let all_hrefs = ''
-    if (argv['play-all'] && (argv.mpv || argv.mplayer || argv.smplayer)) {
+    if (argv['playlist'] && (argv.mpv || argv.mplayer)) {
       // set the selected to the first file if not specified
       if (typeof argv.select !== 'number') {
         index = 0
       }
       let all_files = []
-      torrent.files.forEach((file, i) => all_files.push(`"${href}/${i}/${encodeURIComponent(file.name)}"`))
+      torrent.files.forEach((file, i) => all_files.push(`${href}/${i}/${encodeURIComponent(file.name)}`))
       // set the first file to the selected index
       all_files = all_files.slice(index, all_files.length).concat(all_files.slice(0, index))
-      all_hrefs = all_files.join(' ')
+      all_hrefs = all_files.join('\n')
+      console.log(all_hrefs)
     } else {
       href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
     }
@@ -558,13 +559,13 @@ function runDownload (torrentId) {
     } else if (argv.iina) {
       openIINA(`${IINA_EXEC} "${href}"`, `iina://weblink?url=${href}`)
     } else if (argv.mplayer) {
-      (argv['play-all']) ? openPlayer(`${MPLAYER_EXEC} ${all_hrefs}`) : openPlayer(`${MPLAYER_EXEC} "${href}"`)
+      (argv['playlist']) ? openPlayer(`${MPLAYER_EXEC} -playlist <(echo '${all_hrefs}')`) : openPlayer(`${MPLAYER_EXEC} "${href}"`)
     } else if (argv.mpv) {
-      (argv['play-all']) ? openPlayer(`${MPV_EXEC} ${all_hrefs}`) : openPlayer(`${MPV_EXEC} "${href}"`)
+      (argv['playlist']) ? openPlayer(`${MPV_EXEC} --playlist=<(echo '${all_hrefs}')`) : openPlayer(`${MPV_EXEC} "${href}"`)
     } else if (argv.omx) {
       openPlayer(`${OMX_EXEC} "${href}"`)
     } else if (argv.smplayer) {
-      (argv['play-all']) ? openPlayer(`${SMPLAYER_EXEC} ${all_hrefs}`) : openPlayer(`${SMPLAYER_EXEC} "${href}"`)
+      openPlayer(`${SMPLAYER_EXEC} "${href}"`)
     }
 
     function openPlayer (cmd) {
