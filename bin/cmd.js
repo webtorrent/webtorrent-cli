@@ -152,7 +152,6 @@ if (argv.subtitles) {
   }))
 }
 
-
 if (argv.pip) {
   IINA_EXEC += ' --pip'
 }
@@ -163,7 +162,6 @@ if (!argv['not-on-top']) {
   MPV_EXEC += ' --ontop'
   SMPLAYER_EXEC += ' -ontop'
 }
-
 
 function checkPermission (filename) {
   try {
@@ -520,17 +518,15 @@ function runDownload (torrentId) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
-    let all_hrefs = ''
-    if (argv['playlist'] && (argv.mpv || argv.mplayer)) {
+    let all_hrefs = []
+    if (argv['playlist'] && (argv.mpv || argv.mplayer || argv.vlc)) {
       // set the selected to the first file if not specified
       if (typeof argv.select !== 'number') {
         index = 0
       }
-      let all_files = []
-      torrent.files.forEach((file, i) => all_files.push(`${href}/${i}/${encodeURIComponent(file.name)}`))
+      torrent.files.forEach((file, i) => all_hrefs.push(`${href}/${i}/${encodeURIComponent(file.name)}`))
       // set the first file to the selected index
-      all_files = all_files.slice(index, all_files.length).concat(all_files.slice(0, index))
-      all_hrefs = all_files.join('\n')
+      all_hrefs = all_hrefs.slice(index, all_hrefs.length).concat(all_hrefs.slice(0, index))
     } else {
       href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
     }
@@ -552,15 +548,15 @@ function runDownload (torrentId) {
         if (process.platform === 'win32') {
           openVLCWin32(vlcCmd)
         } else {
-          openPlayer(`${vlcCmd} "${href}" ${VLC_ARGS}`)
+          (argv['playlist']) ? openPlayer(`${vlcCmd} ${all_hrefs.join(' ')} ${VLC_ARGS}`) : openPlayer(`${vlcCmd} "${href}" ${VLC_ARGS}`)
         }
       })
     } else if (argv.iina) {
       openIINA(`${IINA_EXEC} "${href}"`, `iina://weblink?url=${href}`)
     } else if (argv.mplayer) {
-      (argv['playlist']) ? openPlayer(`${MPLAYER_EXEC} -playlist <(echo '${all_hrefs}')`) : openPlayer(`${MPLAYER_EXEC} "${href}"`)
+      (argv['playlist']) ? openPlayer(`${MPLAYER_EXEC} -playlist <(echo '${all_hrefs.join('\n')}')`) : openPlayer(`${MPLAYER_EXEC} "${href}"`)
     } else if (argv.mpv) {
-      (argv['playlist']) ? openPlayer(`${MPV_EXEC} --playlist=<(echo '${all_hrefs}')`) : openPlayer(`${MPV_EXEC} "${href}"`)
+      (argv['playlist']) ? openPlayer(`${MPV_EXEC} --playlist=<(echo '${all_hrefs.join('\n')}')`) : openPlayer(`${MPV_EXEC} "${href}"`)
     } else if (argv.omx) {
       openPlayer(`${OMX_EXEC} "${href}"`)
     } else if (argv.smplayer) {
@@ -587,7 +583,12 @@ function runDownload (torrentId) {
     }
 
     function openVLCWin32 (vlcCommand) {
-      const args = [].concat(href, VLC_ARGS.split(' '))
+      let args = []
+      if (argv['playlist']) {
+        args = [].concat(all_hrefs, VLC_ARGS.split(' '))
+      } else {
+        args = [].concat(href, VLC_ARGS.split(' '))
+      }
 
       cp.execFile(vlcCommand, args, err => {
         if (err) {
