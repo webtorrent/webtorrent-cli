@@ -325,7 +325,7 @@ function runHelp () {
 
       Options (advanced):
       --stdout                  standard out (implies --quiet)
-      --playlist                open all files if supported by the player
+      --playlist                open files in a playlist if supported by the player
       -p, --port [number]       change the http server port [default: 8000]
       -a, --announce [url]      tracker URL to announce to
       -b, --blocklist [path]    load blocklist file/http url
@@ -531,7 +531,6 @@ function runDownload (torrentId) {
       // set the first file to the selected index
       all_files = all_files.slice(index, all_files.length).concat(all_files.slice(0, index))
       all_hrefs = all_files.join('\n')
-      console.log(all_hrefs)
     } else {
       href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
     }
