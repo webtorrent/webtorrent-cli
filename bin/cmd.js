@@ -458,7 +458,7 @@ function runDownload (torrentId) {
         .start()
     }
 
-    if (argv.chromecast !== false) {
+    if (argv.chromecast) {
       const chromecasts = require('chromecasts')()
 
       const opts = {
