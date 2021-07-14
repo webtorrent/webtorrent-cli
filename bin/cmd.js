@@ -80,7 +80,7 @@ const playerArgs = {
   iina: ['/Applications/IINA.app/Contents/MacOS/iina-cli', '--keep-running'],
   mpv: ['mpv', '--really-quiet', '--loop=no'],
   mplayer: ['mplayer', '-really-quiet', '-noidx', '-loop', '0'],
-  smplayer: ['smplayer -close-at-end'],
+  smplayer: ['smplayer', '-close-at-end'],
   omx: [
     'lxterminal', '-e',
     'omxplayer', '-r',
@@ -447,7 +447,7 @@ function runDownload (torrentId) {
         .start()
     }
 
-    if (argv.chromecast !== false) {
+    if (argv.chromecast) {
       const chromecasts = require('chromecasts')()
 
       const opts = {
