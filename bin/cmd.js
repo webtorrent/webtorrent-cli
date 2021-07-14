@@ -800,7 +800,7 @@ function getRuntime () {
 function processInputs (inputs, fn) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
-  if (inputs instanceof Array && inputs.length !== 0) {
+  if (Array.isArray(inputs) && inputs.length !== 0) {
     if (inputs.length > 1) {
       const invalidArguments = [
         'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
