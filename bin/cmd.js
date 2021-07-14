@@ -52,7 +52,7 @@ const options = {
     q: { alias: 'quiet', desc: 'Don\'t show UI on stdout' },
     pip: { desc: 'Enter Picture-in-Picture if supported by the player' },
     verbose: { desc: 'Show torrent protocol details' },
-    'playlist': {desc: 'Open files in a playlist if supported by the player'},
+    playlist: { desc: 'Open files in a playlist if supported by the player' },
     'player-args': { desc: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
     'torrent-port': { desc: 'Change the torrent seeding port', defaultDescription: 'random' },
     'dht-port': { desc: 'Change the dht port', defaultDescription: 'random' },
