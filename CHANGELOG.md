@@ -1,3 +1,10 @@
+# [3.5.0](https://github.com/webtorrent/webtorrent-cli/compare/v3.4.1...v3.5.0) (2021-07-15)
+
+
+### Features
+
+* add playlist option ([#168](https://github.com/webtorrent/webtorrent-cli/issues/168)) ([a003e7e](https://github.com/webtorrent/webtorrent-cli/commit/a003e7e6badeb62d52f7945c4526163a81015d19))
+
 ## [3.4.1](https://github.com/webtorrent/webtorrent-cli/compare/v3.4.0...v3.4.1) (2021-07-15)
 
 
