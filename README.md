@@ -10,7 +10,7 @@
 <h4 align="center">The streaming torrent client. For the command line.</h4>
 
 <p align="center">
-    <a href="https://travis-ci.org/webtorrent/webtorrent-cli"><img src="https://img.shields.io/travis/webtorrent/webtorrent-cli/master.svg" alt="travis"></a>
+    <a href="https://github.com/webtorrent/webtorrent-cli/actions/workflows/ci.yml"><img src="https://github.com/webtorrent/webtorrent-cli/actions/workflows/ci.yml/badge.svg?branch=master" alt="ci"></a>
     <a href="https://npmjs.com/package/webtorrent-cli"><img src="https://img.shields.io/npm/v/webtorrent-cli.svg" alt="npm version"></a>
     <a href="https://npmjs.org/package/webtorrent-cli"><img src="https://img.shields.io/npm/dm/webtorrent-cli.svg" alt="npm downloads"></a>
     <a href="https://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="javascript style guide"></a>
