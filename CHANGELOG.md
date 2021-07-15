@@ -1,3 +1,10 @@
+# [3.4.0](https://github.com/webtorrent/webtorrent-cli/compare/v3.3.2...v3.4.0) (2021-07-14)
+
+
+### Features
+
+* allow script arguments ([#176](https://github.com/webtorrent/webtorrent-cli/issues/176)) ([e6228ab](https://github.com/webtorrent/webtorrent-cli/commit/e6228ab6141445b1f9dc2b3a0256522a9a47bfb6))
+
 ## [3.3.2](https://github.com/webtorrent/webtorrent-cli/compare/v3.3.1...v3.3.2) (2021-07-14)
 
 

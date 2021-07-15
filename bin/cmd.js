@@ -200,13 +200,11 @@ function init (_argv) {
   }
 
   if (argv.onDone) {
-    checkPermission(argv.onDone)
-    argv.onDone = argv['on-done'] = fs.realpathSync(argv.onDone)
+    argv.onDone = argv['on-done'] = argv.onDone.split(' ')
   }
 
   if (argv.onExit) {
-    checkPermission(argv.onExit)
-    argv.onExit = argv['on-exit'] = fs.realpathSync(argv.onExit)
+    argv.onExit = argv['on-exit'] = argv.onExit.split(' ')
   }
 
   if (playerName && argv.playerArgs) {
@@ -320,8 +318,11 @@ function runDownload (torrentId) {
 
       console.log(chalk`\ntorrent downloaded {green successfully} from {bold ${numActiveWires}/${torrent.numPeers}} {green peers} in {bold ${getRuntime()}s}!`)
     }
-    if (argv['on-done']) {
-      cp.exec(argv['on-done']).unref()
+    if (argv.onDone) {
+      cp.spawn(argv.onDone[0], argv.onDone.slice(1), { shell: true } )
+      .on('error', (err) => fatalError(err))
+      .stderr.on('data', (err) => fatalError(err))
+      .unref()
     }
     if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
       torrent.destroy()
@@ -774,8 +775,11 @@ function gracefulExit () {
 
   clearInterval(drawInterval)
 
-  if (argv['on-exit']) {
-    cp.exec(argv['on-exit']).unref()
+  if (argv.onExit) {
+    cp.spawn(argv.onExit[0], argv.onExit.slice(1), { shell: true } )
+    .on('error', (err) => fatalError(err))
+    .stderr.on('data', (err) => fatalError(err))
+    .unref()
   }
 
   client.destroy(err => {
@@ -790,16 +794,6 @@ function gracefulExit () {
   })
 }
 
-function checkPermission (filename) {
-  try {
-    if (!executable.sync(filename)) {
-      return errorAndExit(`Script "${filename}" is not executable`)
-    }
-  } catch (err) {
-    return errorAndExit(`Script "${filename}" does not exist`)
-  }
-}
-
 function enableQuiet () {
   argv.quiet = argv.q = true
 }
@@ -811,7 +805,7 @@ function getRuntime () {
 function processInputs (inputs, fn) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
-  if (inputs) {
+  if (Array.isArray(inputs) && inputs.length !== 0) {
     if (inputs.length > 1) {
       const invalidArguments = [
         'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
@@ -827,9 +821,8 @@ function processInputs (inputs, fn) {
       })
       torrentCount = inputs.length
       enableQuiet()
-    } else if (inputs.length === 1) {
-      fn(inputs[0])
     }
+    inputs.forEach(input => fn(input))
   } else {
     yargs.showHelp('log')
   }
