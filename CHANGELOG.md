@@ -1,3 +1,10 @@
+## [3.5.1](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.0...v3.5.1) (2021-07-15)
+
+
+### Bug Fixes
+
+* standard fix, remove executable ([d028284](https://github.com/webtorrent/webtorrent-cli/commit/d028284f68b4d4ce7ac235a4741aeadcbf7685b1))
+
 # [3.5.0](https://github.com/webtorrent/webtorrent-cli/compare/v3.4.1...v3.5.0) (2021-07-15)
 
 
