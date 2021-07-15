@@ -1,3 +1,17 @@
+# [3.4.0](https://github.com/webtorrent/webtorrent-cli/compare/v3.3.2...v3.4.0) (2021-07-14)
+
+
+### Features
+
+* allow script arguments ([#176](https://github.com/webtorrent/webtorrent-cli/issues/176)) ([e6228ab](https://github.com/webtorrent/webtorrent-cli/commit/e6228ab6141445b1f9dc2b3a0256522a9a47bfb6))
+
+## [3.3.2](https://github.com/webtorrent/webtorrent-cli/compare/v3.3.1...v3.3.2) (2021-07-14)
+
+
+### Bug Fixes
+
+* Chromecast logic & typo ([#175](https://github.com/webtorrent/webtorrent-cli/issues/175)) ([8234278](https://github.com/webtorrent/webtorrent-cli/commit/8234278a4bab58f47a13aed5484eff8482e57e17))
+
 ## [3.3.1](https://github.com/webtorrent/webtorrent-cli/compare/v3.3.0...v3.3.1) (2021-07-09)
 
 
