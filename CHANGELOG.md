@@ -1,3 +1,10 @@
+## [3.4.1](https://github.com/webtorrent/webtorrent-cli/compare/v3.4.0...v3.4.1) (2021-07-15)
+
+
+### Bug Fixes
+
+* multiple torrent downloads ([#177](https://github.com/webtorrent/webtorrent-cli/issues/177)) ([1a75830](https://github.com/webtorrent/webtorrent-cli/commit/1a7583044f14c34d1d4c76ec526ae446ecd461ac))
+
 # [3.4.0](https://github.com/webtorrent/webtorrent-cli/compare/v3.3.2...v3.4.0) (2021-07-14)
 
 
