@@ -794,7 +794,7 @@ function getRuntime () {
 function processInputs (inputs, fn) {
   // These arguments do not make sense when downloading multiple torrents, or
   // seeding multiple files/folders.
-  if (inputs) {
+  if (Array.isArray(inputs) && inputs.length !== 0) {
     if (inputs.length > 1) {
       const invalidArguments = [
         'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
@@ -810,9 +810,8 @@ function processInputs (inputs, fn) {
       })
       torrentCount = inputs.length
       enableQuiet()
-    } else if (inputs.length === 1) {
-      fn(inputs[0])
     }
+    inputs.forEach(input => fn(input))
   } else {
     yargs.showHelp('log')
   }
