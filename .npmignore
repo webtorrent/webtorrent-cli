@@ -1,4 +1,2 @@
-.travis.yml
-CONTRIBUTING.md
-tools/
-test/
+*
+!bin/
