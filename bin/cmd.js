@@ -27,40 +27,40 @@ const { version: webTorrentVersion } = require('webtorrent/package.json')
 // Group options into sections (used in yargs configuration)
 const options = {
   streaming: {
-    airplay: { desc: 'Apple TV' },
+    airplay: { desc: 'Apple TV', type: 'boolean' },
     chromecast: { desc: 'Google Chromecast', defaultDescription: 'all' },
-    dlna: { desc: 'DNLA' },
-    mplayer: { desc: 'MPlayer' },
-    mpv: { desc: 'MPV' },
+    dlna: { desc: 'DNLA', type: 'boolean' },
+    mplayer: { desc: 'MPlayer', type: 'boolean' },
+    mpv: { desc: 'MPV', type: 'boolean' },
     omx: { desc: 'OMX', defaultDescription: 'hdmi' },
-    vlc: { desc: 'VLC' },
-    iina: { desc: 'IINA' },
-    smplayer: { desc: 'SMPlayer' },
-    xbmc: { desc: 'XBMC' },
-    stdout: { desc: 'Standard out (implies --quiet)' }
+    vlc: { desc: 'VLC', type: 'boolean' },
+    iina: { desc: 'IINA', type: 'boolean' },
+    smplayer: { desc: 'SMPlayer', type: 'boolean' },
+    xbmc: { desc: 'XBMC', type: 'boolean' },
+    stdout: { desc: 'Standard out (implies --quiet)', type: 'boolean' }
   },
   simple: {
     o: { alias: 'out', desc: 'Set download destination', type: 'string', requiresArg: true },
-    s: { alias: 'select', desc: 'Select specific file in torrent' },
+    s: { alias: 'select', desc: 'Select specific file in torrent', defaultDescription: 'List files' },
     t: { alias: 'subtitles', desc: 'Load subtitles file', type: 'string', requiresArg: true }
   },
   advanced: {
-    p: { alias: 'port', desc: 'Change the http server port', default: 8000, requiresArg: true },
+    p: { alias: 'port', desc: 'Change the http server port', type: 'number', default: 8000, requiresArg: true },
     b: { alias: 'blocklist', desc: 'Load blocklist file/url', type: 'string', requiresArg: true },
     a: { alias: 'announce', desc: 'Tracker URL to announce to', type: 'string', requiresArg: true },
-    q: { alias: 'quiet', desc: 'Don\'t show UI on stdout' },
-    pip: { desc: 'Enter Picture-in-Picture if supported by the player' },
-    verbose: { desc: 'Show torrent protocol details' },
-    playlist: { desc: 'Open files in a playlist if supported by the player' },
+    q: { alias: 'quiet', desc: 'Don\'t show UI on stdout', type: 'boolean' },
+    pip: { desc: 'Enter Picture-in-Picture if supported by the player', type: 'boolean' },
+    verbose: { desc: 'Show torrent protocol details', type: 'boolean' },
+    playlist: { desc: 'Open files in a playlist if supported by the player', type: 'boolean' },
     'player-args': { desc: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
-    'torrent-port': { desc: 'Change the torrent seeding port', defaultDescription: 'random' },
-    'dht-port': { desc: 'Change the dht port', defaultDescription: 'random' },
-    'not-on-top': { desc: 'Don\'t set "always on top" option in player' },
-    'keep-seeding': { desc: 'Don\'t quit when done downloading' },
-    'no-quit': { desc: 'Don\'t quit when player exits' },
+    'torrent-port': { desc: 'Change the torrent seeding port', defaultDescription: 'random', type: 'number', requiresArg: true },
+    'dht-port': { desc: 'Change the dht port', defaultDescription: 'random', type: 'number', requiresArg: true },
+    'not-on-top': { desc: 'Don\'t set "always on top" option in player', type: 'boolean' },
+    'keep-seeding': { desc: 'Don\'t quit when done downloading', type: 'boolean' },
+    'no-quit': { desc: 'Don\'t quit when player exits', type: 'boolean' },
     quit: { hidden: true, default: true },
-    'on-done': { desc: 'Run script after torrent download is done', requiresArg: true },
-    'on-exit': { desc: 'Run script before program exit', requiresArg: true }
+    'on-done': { desc: 'Run script after torrent download is done', type: 'string', requiresArg: true },
+    'on-exit': { desc: 'Run script before program exit', type: 'string', requiresArg: true }
   }
 }
 
@@ -109,6 +109,7 @@ process.on('SIGINT', gracefulExit)
 process.on('SIGTERM', gracefulExit)
 
 yargs
+  .wrap(Math.min(100, yargs.terminalWidth()))
   .scriptName('webtorrent')
   .locale('en')
   .fail((msg, err) => { console.log(chalk`\n{red Error:} ${msg || err}`); process.exit(1) })
