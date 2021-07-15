@@ -5,7 +5,6 @@ const chalk = require('chalk')
 const cp = require('child_process')
 const createTorrent = require('create-torrent')
 const ecstatic = require('ecstatic')
-const executable = require('executable')
 const fs = require('fs')
 const http = require('http')
 const mime = require('mime')
@@ -319,10 +318,10 @@ function runDownload (torrentId) {
       console.log(chalk`\ntorrent downloaded {green successfully} from {bold ${numActiveWires}/${torrent.numPeers}} {green peers} in {bold ${getRuntime()}s}!`)
     }
     if (argv.onDone) {
-      cp.spawn(argv.onDone[0], argv.onDone.slice(1), { shell: true } )
-      .on('error', (err) => fatalError(err))
-      .stderr.on('data', (err) => fatalError(err))
-      .unref()
+      cp.spawn(argv.onDone[0], argv.onDone.slice(1), { shell: true })
+        .on('error', (err) => fatalError(err))
+        .stderr.on('data', (err) => fatalError(err))
+        .unref()
     }
     if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
       torrent.destroy()
@@ -389,15 +388,15 @@ function runDownload (torrentId) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
-    let all_hrefs = []
+    let allHrefs = []
     if (argv.playlist && (argv.mpv || argv.mplayer || argv.vlc || argv.smplayer)) {
       // set the selected to the first file if not specified
-      if (typeof argv.select != 'number') {
+      if (typeof argv.select !== 'number') {
         index = 0
       }
-      torrent.files.forEach((file, i) => all_hrefs.push(JSON.stringify(`${href}/${i}/${encodeURIComponent(file.name)}`)))
+      torrent.files.forEach((file, i) => allHrefs.push(JSON.stringify(`${href}/${i}/${encodeURIComponent(file.name)}`)))
       // set the first file to the selected index
-      all_hrefs = all_hrefs.slice(index, all_hrefs.length).concat(all_hrefs.slice(0, index))
+      allHrefs = allHrefs.slice(index, allHrefs.length).concat(allHrefs.slice(0, index))
     } else {
       href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
     }
@@ -416,18 +415,18 @@ function runDownload (torrentId) {
           return fatalError(err)
         }
         playerArgs.vlc[0] = vlcCmd
-        argv.playlist ? openPlayer(playerArgs.vlc.concat(all_hrefs)) : openPlayer(playerArgs.vlc.concat(JSON.stringify(href)))
+        argv.playlist ? openPlayer(playerArgs.vlc.concat(allHrefs)) : openPlayer(playerArgs.vlc.concat(JSON.stringify(href)))
       })
     } else if (argv.iina) {
       open(`iina://weblink?url=${href}`, { wait: true }).then(playerExit)
     } else if (argv.mplayer) {
-      argv.playlist ? openPlayer(playerArgs.mplayer.concat(all_hrefs)) : openPlayer(playerArgs.mplayer.concat(JSON.stringify(href)))
+      argv.playlist ? openPlayer(playerArgs.mplayer.concat(allHrefs)) : openPlayer(playerArgs.mplayer.concat(JSON.stringify(href)))
     } else if (argv.mpv) {
-      argv.playlist ? openPlayer(playerArgs.mpv.concat(all_hrefs)) : openPlayer(playerArgs.mpv.concat(JSON.stringify(href)))
+      argv.playlist ? openPlayer(playerArgs.mpv.concat(allHrefs)) : openPlayer(playerArgs.mpv.concat(JSON.stringify(href)))
     } else if (argv.omx) {
       openPlayer(playerArgs.omx.concat(JSON.stringify(href)))
     } else if (argv.smplayer) {
-      argv.playlist ? openPlayer(playerArgs.smplayer.concat(all_hrefs)) : openPlayer(playerArgs.smplayer.concat(JSON.stringify(href)))
+      argv.playlist ? openPlayer(playerArgs.smplayer.concat(allHrefs)) : openPlayer(playerArgs.smplayer.concat(JSON.stringify(href)))
     }
 
     function openPlayer (args) {
@@ -776,10 +775,10 @@ function gracefulExit () {
   clearInterval(drawInterval)
 
   if (argv.onExit) {
-    cp.spawn(argv.onExit[0], argv.onExit.slice(1), { shell: true } )
-    .on('error', (err) => fatalError(err))
-    .stderr.on('data', (err) => fatalError(err))
-    .unref()
+    cp.spawn(argv.onExit[0], argv.onExit.slice(1), { shell: true })
+      .on('error', (err) => fatalError(err))
+      .stderr.on('data', (err) => fatalError(err))
+      .unref()
   }
 
   client.destroy(err => {
