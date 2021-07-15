@@ -52,6 +52,7 @@ const options = {
     q: { alias: 'quiet', desc: 'Don\'t show UI on stdout' },
     pip: { desc: 'Enter Picture-in-Picture if supported by the player' },
     verbose: { desc: 'Show torrent protocol details' },
+    playlist: { desc: 'Open files in a playlist if supported by the player' },
     'player-args': { desc: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
     'torrent-port': { desc: 'Change the torrent seeding port', defaultDescription: 'random' },
     'dht-port': { desc: 'Change the dht port', defaultDescription: 'random' },
@@ -388,8 +389,18 @@ function runDownload (torrentId) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
-
-    href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
+    let all_hrefs = []
+    if (argv.playlist && (argv.mpv || argv.mplayer || argv.vlc || argv.smplayer)) {
+      // set the selected to the first file if not specified
+      if (typeof argv.select != 'number') {
+        index = 0
+      }
+      torrent.files.forEach((file, i) => all_hrefs.push(JSON.stringify(`${href}/${i}/${encodeURIComponent(file.name)}`)))
+      // set the first file to the selected index
+      all_hrefs = all_hrefs.slice(index, all_hrefs.length).concat(all_hrefs.slice(0, index))
+    } else {
+      href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
+    }
 
     if (playerName) {
       torrent.files[index].select()
@@ -405,18 +416,18 @@ function runDownload (torrentId) {
           return fatalError(err)
         }
         playerArgs.vlc[0] = vlcCmd
-        openPlayer(playerArgs.vlc.concat(JSON.stringify(href)))
+        argv.playlist ? openPlayer(playerArgs.vlc.concat(all_hrefs)) : openPlayer(playerArgs.vlc.concat(JSON.stringify(href)))
       })
     } else if (argv.iina) {
       open(`iina://weblink?url=${href}`, { wait: true }).then(playerExit)
     } else if (argv.mplayer) {
-      openPlayer(playerArgs.mplayer.concat(JSON.stringify(href)))
+      argv.playlist ? openPlayer(playerArgs.mplayer.concat(all_hrefs)) : openPlayer(playerArgs.mplayer.concat(JSON.stringify(href)))
     } else if (argv.mpv) {
-      openPlayer(playerArgs.mpv.concat(JSON.stringify(href)))
+      argv.playlist ? openPlayer(playerArgs.mpv.concat(all_hrefs)) : openPlayer(playerArgs.mpv.concat(JSON.stringify(href)))
     } else if (argv.omx) {
       openPlayer(playerArgs.omx.concat(JSON.stringify(href)))
     } else if (argv.smplayer) {
-      openPlayer(playerArgs.smplayer.concat(JSON.stringify(href)))
+      argv.playlist ? openPlayer(playerArgs.smplayer.concat(all_hrefs)) : openPlayer(playerArgs.smplayer.concat(JSON.stringify(href)))
     }
 
     function openPlayer (args) {
