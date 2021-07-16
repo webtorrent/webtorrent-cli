@@ -1,3 +1,10 @@
+## [3.5.2](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.1...v3.5.2) (2021-07-16)
+
+
+### Bug Fixes
+
+* specify option types explicitly ([#179](https://github.com/webtorrent/webtorrent-cli/issues/179)) ([878c2f7](https://github.com/webtorrent/webtorrent-cli/commit/878c2f7568c34e40a4b3467c480e9026cc9377c2))
+
 ## [3.5.1](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.0...v3.5.1) (2021-07-15)
 
 
