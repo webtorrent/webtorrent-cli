@@ -82,7 +82,7 @@ Specify <torrent-id> as one of:
   * info hash (hex string)
 
 Commands:
-  webtorrent download [torrent-ids...]      Download a torrent         [default]
+  webtorrent download [torrent-ids...]      Download a torrent                             [default]
   webtorrent downloadmeta <torrent-ids...>  Download metadata of torrent
   webtorrent seed <inputs...>               Seed a file or a folder
   webtorrent create <input>                 Create a .torrent file
@@ -91,40 +91,41 @@ Commands:
   webtorrent help                           Show help information
 
 Options (streaming):
-      --airplay     Apple TV
-      --chromecast  Google Chromecast                             [default: all]
-      --dlna        DNLA
-      --mplayer     MPlayer
-      --mpv         MPV
-      --omx         OMX                                          [default: hdmi]
-      --vlc         VLC
-      --iina        IINA
-      --smplayer    SMPlayer
-      --xbmc        XBMC
-      --stdout      Standard out (implies --quiet)
+      --airplay     Apple TV                                                               [boolean]
+      --chromecast  Google Chromecast                                                 [default: all]
+      --dlna        DNLA                                                                   [boolean]
+      --mplayer     MPlayer                                                                [boolean]
+      --mpv         MPV                                                                    [boolean]
+      --omx         OMX                                                              [default: hdmi]
+      --vlc         VLC                                                                    [boolean]
+      --iina        IINA                                                                   [boolean]
+      --smplayer    SMPlayer                                                               [boolean]
+      --xbmc        XBMC                                                                   [boolean]
+      --stdout      Standard out (implies --quiet)                                         [boolean]
 
 Options (simple):
-  -o, --out        Set download destination                             [string]
-  -s, --select     Select specific file in torrent
-  -t, --subtitles  Load subtitles file                                  [string]
-  -h, --help       Show help information                               [boolean]
-  -v, --version    Show version information                            [boolean]
+  -o, --out        Set download destination                                                 [string]
+  -s, --select     Select specific file in torrent                             [default: List files]
+  -t, --subtitles  Load subtitles file                                                      [string]
+  -h, --help       Show help information                                                   [boolean]
+  -v, --version    Show version information                                                [boolean]
 
 Options (advanced)
-  -p, --port          Change the http server port                [default: 8000]
-  -b, --blocklist     Load blocklist file/url                           [string]
-  -a, --announce      Tracker URL to announce to                        [string]
-  -q, --quiet         Don't show UI on stdout
-      --pip           Enter Picture-in-Picture if supported by the player
-      --verbose       Show torrent protocol details
-      --player-args   Add player specific arguments (see example)       [string]
-      --torrent-port  Change the torrent seeding port          [default: random]
-      --dht-port      Change the dht port                      [default: random]
-      --not-on-top    Don't set "always on top" option in player
-      --keep-seeding  Don't quit when done downloading
-      --no-quit       Don't quit when player exits
-      --on-done       Run script after torrent download is done
-      --on-exit       Run script before program exit
+  -p, --port          Change the http server port                           [number] [default: 8000]
+  -b, --blocklist     Load blocklist file/url                                               [string]
+  -a, --announce      Tracker URL to announce to                                            [string]
+  -q, --quiet         Don't show UI on stdout                                              [boolean]
+      --pip           Enter Picture-in-Picture if supported by the player                  [boolean]
+      --verbose       Show torrent protocol details                                        [boolean]
+      --playlist      Open files in a playlist if supported by the player                  [boolean]
+      --player-args   Add player specific arguments (see example)                           [string]
+      --torrent-port  Change the torrent seeding port                     [number] [default: random]
+      --dht-port      Change the dht port                                 [number] [default: random]
+      --not-on-top    Don't set "always on top" option in player                           [boolean]
+      --keep-seeding  Don't quit when done downloading                                     [boolean]
+      --no-quit       Don't quit when player exits                                         [boolean]
+      --on-done       Run script after torrent download is done                             [string]
+      --on-exit       Run script before program exit                                        [string]
 ```
 
 To download a torrent:
