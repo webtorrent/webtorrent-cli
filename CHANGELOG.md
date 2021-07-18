@@ -1,3 +1,10 @@
+## [3.5.3](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.2...v3.5.3) (2021-07-18)
+
+
+### Bug Fixes
+
+* removal of ascii-logo.txt ([#181](https://github.com/webtorrent/webtorrent-cli/issues/181)) ([d528345](https://github.com/webtorrent/webtorrent-cli/commit/d528345812470375b8cb033de0940e54485ef5f5))
+
 ## [3.5.2](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.1...v3.5.2) (2021-07-16)
 
 
