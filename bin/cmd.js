@@ -202,11 +202,11 @@ function init (_argv) {
   }
 
   if (argv.downloadLimit > 0) {
-    argv.downloadLimit = argv.d = argv['download-limit'] = argv.downloadLimit * 1000
+    argv.downloadLimit = argv.d = argv['download-limit'] = argv.downloadLimit * 1024
   }
 
   if (argv.uploadLimit > 0) {
-    argv.uploadLimit = argv.u = argv['upload-limit'] = argv.uploadLimit * 1000
+    argv.uploadLimit = argv.u = argv['upload-limit'] = argv.uploadLimit * 1024
   }
 
   if (argv.onDone) {
