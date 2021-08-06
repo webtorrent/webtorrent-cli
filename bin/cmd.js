@@ -49,6 +49,8 @@ const options = {
     b: { alias: 'blocklist', desc: 'Load blocklist file/url', type: 'string', requiresArg: true },
     a: { alias: 'announce', desc: 'Tracker URL to announce to', type: 'string', requiresArg: true },
     q: { alias: 'quiet', desc: 'Don\'t show UI on stdout', type: 'boolean' },
+    d: { alias: 'download-limit', desc: 'Maximum download speed in kB/s', type: 'number', requiresArg: true, default: -1, defaultDescription: 'unlimited' },
+    u: { alias: 'upload-limit', desc: 'Maximum upload speed in kB/s', type: 'number', requiresArg: true, default: -1, defaultDescription: 'unlimited' },
     pip: { desc: 'Enter Picture-in-Picture if supported by the player', type: 'boolean' },
     verbose: { desc: 'Show torrent protocol details', type: 'boolean' },
     playlist: { desc: 'Open files in a playlist if supported by the player', type: 'boolean' },
@@ -199,6 +201,14 @@ function init (_argv) {
     playerArgs.smplayer.push('-ontop')
   }
 
+  if (argv.downloadLimit > 0) {
+    argv.downloadLimit = argv.d = argv['download-limit'] = argv.downloadLimit * 1024
+  }
+
+  if (argv.uploadLimit > 0) {
+    argv.uploadLimit = argv.u = argv['upload-limit'] = argv.uploadLimit * 1024
+  }
+
   if (argv.onDone) {
     argv.onDone = argv['on-done'] = argv.onDone.split(' ')
   }
@@ -274,7 +284,9 @@ function runDownload (torrentId) {
   client = new WebTorrent({
     blocklist: argv.blocklist,
     torrentPort: argv['torrent-port'],
-    dhtPort: argv['dht-port']
+    dhtPort: argv['dht-port'],
+    downloadLimit: argv.downloadLimit,
+    uploadLimit: argv.uploadLimit
   })
   client.on('error', fatalError)
 
@@ -533,7 +545,9 @@ function runDownloadMeta (torrentId) {
   client = new WebTorrent({
     blocklist: argv.blocklist,
     torrentPort: argv['torrent-port'],
-    dhtPort: argv['dht-port']
+    dhtPort: argv['dht-port'],
+    downloadLimit: argv.downloadLimit,
+    uploadLimit: argv.uploadLimit
   })
   client.on('error', fatalError)
 
@@ -581,7 +595,9 @@ function runSeed (input) {
   client = new WebTorrent({
     blocklist: argv.blocklist,
     torrentPort: argv['torrent-port'],
-    dhtPort: argv['dht-port']
+    dhtPort: argv['dht-port'],
+    downloadLimit: argv.downloadLimit,
+    uploadLimit: argv.uploadLimit
   })
 
   client.on('error', fatalError)
