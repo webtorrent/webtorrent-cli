@@ -112,7 +112,7 @@ process.on('SIGINT', gracefulExit)
 process.on('SIGTERM', gracefulExit)
 
 yargs
-  .wrap(Math.min(100, yargs.terminalWidth()))
+  .wrap(null)
   .scriptName('webtorrent')
   .locale('en')
   .fail((msg, err) => { console.log(chalk`\n{red Error:} ${msg || err}`); process.exit(1) })
