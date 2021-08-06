@@ -53,6 +53,7 @@ const options = {
     u: { alias: 'upload-limit', desc: 'Maximum upload speed in kB/s', type: 'number', requiresArg: true, default: -1, defaultDescription: 'unlimited' },
     pip: { desc: 'Enter Picture-in-Picture if supported by the player', type: 'boolean' },
     verbose: { desc: 'Show torrent protocol details', type: 'boolean' },
+    json: { desc: 'Show JSON data', type: 'boolean' },
     playlist: { desc: 'Open files in a playlist if supported by the player', type: 'boolean' },
     'player-args': { desc: 'Add player specific arguments (see example)', type: 'string', requiresArg: true },
     'torrent-port': { desc: 'Change the torrent seeding port', defaultDescription: 'random', type: 'number', requiresArg: true },
@@ -167,7 +168,7 @@ function init (_argv) {
   if (process.env.DEBUG) {
     playerArgs.vlc.push('--extraintf=http:logger', '--verbose=2', '--file-logging', '--logfile=vlc-log.txt')
   }
-  if (process.env.DEBUG || argv.stdout) {
+  if (process.env.DEBUG || argv.stdout || argv.json) {
     enableQuiet()
   }
 
@@ -386,15 +387,15 @@ function runDownload (torrentId) {
     }
 
     // if no index specified, use largest file
-    const index = (typeof argv.select === 'number')
+    argv.select = argv.select = (typeof argv.select === 'number')
       ? argv.select
       : torrent.files.indexOf(torrent.files.reduce((a, b) => a.length > b.length ? a : b))
 
-    if (!torrent.files[index]) {
-      return errorAndExit(`There's no file that maps to index ${index}`)
+    if (!torrent.files[argv.select]) {
+      return errorAndExit(`There's no file that maps to index ${argv.select}`)
     }
 
-    onSelection(index)
+    onSelection(argv.select)
   }
 
   function onSelection (index) {
@@ -402,6 +403,20 @@ function runDownload (torrentId) {
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
     let allHrefs = []
+
+    if (argv.json) {
+      process.stdout.write(JSON.stringify(
+        {
+          href: href,
+          argv: argv,
+          files: torrent.files.map((file, i) => file.name)
+        },
+        null,
+        2
+      ))
+      argv.json = argv.json = false // making sure that it prints only once
+    }
+
     if (argv.playlist && (argv.mpv || argv.mplayer || argv.vlc || argv.smplayer)) {
       // set the selected to the first file if not specified
       if (typeof argv.select !== 'number') {
