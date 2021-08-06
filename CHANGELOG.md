@@ -1,3 +1,10 @@
+## [3.5.4](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.3...v3.5.4) (2021-08-06)
+
+
+### Bug Fixes
+
+* **deps:** update dependency create-torrent to v5 ([74877da](https://github.com/webtorrent/webtorrent-cli/commit/74877da76166fb595d2df431ff2bf368713e27c6))
+
 ## [3.5.3](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.2...v3.5.3) (2021-07-18)
 
 
