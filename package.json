@@ -34,7 +34,7 @@
   "devDependencies": {
     "@webtorrent/semantic-release-config": "1.0.5",
     "cross-spawn": "7.0.3",
-    "semantic-release": "17.4.4",
+    "semantic-release": "17.4.5",
     "standard": "*",
     "tape": "5.3.1",
     "webtorrent-fixtures": "1.7.5",
