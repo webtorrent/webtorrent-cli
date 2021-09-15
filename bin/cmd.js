@@ -1,28 +1,28 @@
 #!/usr/bin/env node
-'use strict'
+import chalk from 'chalk'
+import cp from 'child_process'
+import createTorrent from 'create-torrent'
+import ecstatic from 'ecstatic'
+import fs from 'fs'
+import http from 'http'
+import mime from 'mime'
+import moment from 'moment'
+import networkAddress from 'network-address'
+import parseTorrent from 'parse-torrent'
+import path from 'path'
+import MemoryChunkStore from 'memory-chunk-store'
+import prettierBytes from 'prettier-bytes'
+import stripIndent from 'common-tags/lib/stripIndent/index.js'
+import vlcCommand from 'vlc-command'
+import WebTorrent from 'webtorrent'
+import Yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import open from 'open'
 
-const chalk = require('chalk')
-const cp = require('child_process')
-const createTorrent = require('create-torrent')
-const ecstatic = require('ecstatic')
-const fs = require('fs')
-const http = require('http')
-const mime = require('mime')
-const moment = require('moment')
-const networkAddress = require('network-address')
-const parseTorrent = require('parse-torrent')
-const path = require('path')
-const MemoryChunkStore = require('memory-chunk-store')
-const prettierBytes = require('prettier-bytes')
-const stripIndent = require('common-tags/lib/stripIndent')
-const vlcCommand = require('vlc-command')
-const WebTorrent = require('webtorrent')
-const yargs = require('yargs')()
-const { hideBin } = require('yargs/helpers')
-const open = require('open')
+const { version: webTorrentCliVersion } = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url)))
+const { version: webTorrentVersion } = JSON.parse(fs.readFileSync(new URL('../node_modules/webtorrent/package.json', import.meta.url)))
 
-const { version: webTorrentCliVersion } = require('../package.json')
-const { version: webTorrentVersion } = require('webtorrent/package.json')
+const yargs = Yargs()
 
 // Group options into sections (used in yargs configuration)
 const options = {
@@ -116,7 +116,7 @@ yargs
   .locale('en')
   .fail((msg, err) => { console.log(chalk`\n{red Error:} ${msg || err}`); process.exit(1) })
   .usage(
-    fs.readFileSync(path.join(__dirname, 'ascii-logo.txt'), 'utf8')
+    fs.readFileSync(new URL('ascii-logo.txt', import.meta.url), 'utf-8')
       .split('\n')
       .map(line => chalk`{bold ${line.substring(0, 20)}}{red ${line.substring(20)}}`)
       .join('\n')
@@ -276,7 +276,7 @@ function runCreate (input) {
   })
 }
 
-function runDownload (torrentId) {
+async function runDownload (torrentId) {
   if (!argv.out && !argv.stdout && !playerName) {
     argv.out = process.cwd()
   }
@@ -397,7 +397,7 @@ function runDownload (torrentId) {
     onSelection(index)
   }
 
-  function onSelection (index) {
+  async function onSelection (index) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
@@ -464,7 +464,7 @@ function runDownload (torrentId) {
     }
 
     if (argv.airplay) {
-      const airplay = require('airplay-js')
+      const airplay = await import('airplay-js')
 
       airplay.createBrowser()
         .on('deviceOn', device => device.play(href, 0, () => { }))
@@ -472,7 +472,7 @@ function runDownload (torrentId) {
     }
 
     if (argv.chromecast) {
-      const chromecasts = require('chromecasts')()
+      const chromecasts = (await import('chromecasts'))()
 
       const opts = {
         title: `WebTorrent - ${torrent.files[index].name}`
@@ -502,14 +502,14 @@ function runDownload (torrentId) {
     }
 
     if (argv.xbmc) {
-      const xbmc = require('nodebmc')
+      const xbmc = await import('nodebmc')
 
       new xbmc.Browser()
         .on('deviceOn', device => device.play(href, () => { }))
     }
 
     if (argv.dlna) {
-      const dlnacasts = require('dlnacasts')()
+      const dlnacasts = (await import('dlnacasts'))()
 
       dlnacasts.on('update', player => {
         const opts = {
