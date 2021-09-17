@@ -1,13 +1,12 @@
-const cp = require('child_process')
-const extend = require('xtend')
-const fixtures = require('webtorrent-fixtures')
-const parseTorrent = require('parse-torrent')
-const path = require('path')
-const spawn = require('cross-spawn')
-const test = require('tape')
-// const fs = require('fs')
+import { readFileSync } from 'fs'
+import cp from 'child_process'
+import extend from 'xtend'
+import fixtures from 'webtorrent-fixtures'
+import parseTorrent from 'parse-torrent'
+import spawn from 'cross-spawn'
+import test from 'tape'
 
-const CMD_PATH = path.resolve(__dirname, '..', 'bin', 'cmd.js')
+const CMD_PATH = new URL('../bin/cmd.js', import.meta.url).pathname
 const CMD = `node ${CMD_PATH}`
 
 test('Command line: webtorrent help', t => {
@@ -31,7 +30,7 @@ test('Command line: webtorrent help', t => {
 
 test('Command line: webtorrent version', t => {
   t.plan(6)
-  const expectedVersion = `${require('../package.json').version}\n`
+  const expectedVersion = `${JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8')).version}\n`
 
   cp.exec(`${CMD} version`, (err, data) => {
     t.error(err)
@@ -101,7 +100,7 @@ test('Command line: webtorrent create /path/to/file', t => {
 test('Command line: webtorrent download <torrent file> (with local content)', t => {
   t.plan(2)
 
-  const fixturesPath = path.join(path.dirname(require.resolve('webtorrent-fixtures')), 'fixtures')
+  const fixturesPath = new URL('../node_modules/webtorrent-fixtures/fixtures', import.meta.url).pathname
 
   cp.exec(`${CMD} download ${fixtures.leaves.torrentPath} --out ${fixturesPath}`, (err, data) => {
     t.error(err)
