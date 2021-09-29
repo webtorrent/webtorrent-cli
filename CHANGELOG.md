@@ -1,3 +1,15 @@
+# [4.0.0](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.4...v4.0.0) (2021-09-17)
+
+
+### chore
+
+* switch to ESM (BREAKING) ([#197](https://github.com/webtorrent/webtorrent-cli/issues/197)) ([0bc380d](https://github.com/webtorrent/webtorrent-cli/commit/0bc380dc83de8caf84cf7969542afadf3dbc6329))
+
+
+### BREAKING CHANGES
+
+* switch to ESM
+
 ## [3.5.4](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.3...v3.5.4) (2021-08-06)
 
 
