@@ -68,7 +68,7 @@
   "preferGlobal": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/webtorrent/webtorrent-cli.git"
+    "url": "https://github.com/webtorrent/webtorrent-cli.git"
   },
   "scripts": {
     "test": "standard && tape test/*.js",
