@@ -509,7 +509,7 @@ async function runDownload (torrentId) {
     }
 
     if (argv.dlna) {
-      const dlnacasts = (await import('dlnacasts')).default()
+      const dlnacasts = (await import('dlnacasts2')).default()
 
       dlnacasts.on('update', player => {
         const opts = {
