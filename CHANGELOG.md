@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.0...v4.0.1) (2022-01-04)
+
+
+### Bug Fixes
+
+* npm global install permissions issue ([#210](https://github.com/webtorrent/webtorrent-cli/issues/210)) ([8e4c77f](https://github.com/webtorrent/webtorrent-cli/commit/8e4c77f791e5811f56284adc74ff6fc0666b2149))
+
 # [4.0.0](https://github.com/webtorrent/webtorrent-cli/compare/v3.5.4...v4.0.0) (2021-09-17)
 
 
