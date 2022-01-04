@@ -464,7 +464,7 @@ async function runDownload (torrentId) {
     }
 
     if (argv.airplay) {
-      const airplay = await import('airplay-js')
+      const airplay = (await import('airplay-js')).default
 
       airplay.createBrowser()
         .on('deviceOn', device => device.play(href, 0, () => { }))
@@ -472,7 +472,7 @@ async function runDownload (torrentId) {
     }
 
     if (argv.chromecast) {
-      const chromecasts = (await import('chromecasts'))()
+      const chromecasts = (await import('chromecasts')).default()
 
       const opts = {
         title: `WebTorrent - ${torrent.files[index].name}`
@@ -502,14 +502,14 @@ async function runDownload (torrentId) {
     }
 
     if (argv.xbmc) {
-      const xbmc = await import('nodebmc')
+      const xbmc = (await import('nodebmc')).default
 
       new xbmc.Browser()
         .on('deviceOn', device => device.play(href, () => { }))
     }
 
     if (argv.dlna) {
-      const dlnacasts = (await import('dlnacasts'))()
+      const dlnacasts = (await import('dlnacasts')).default()
 
       dlnacasts.on('update', player => {
         const opts = {
