@@ -45,6 +45,7 @@ To use WebTorrent in the browser, see [`webtorrent`](https://www.npmjs.com/packa
     **[ut_pex](https://www.npmjs.com/package/ut_pex)**
   - **[protocol extension api](https://www.npmjs.com/package/bittorrent-protocol#extension-api)**
     for adding new extensions
+  - Check all the **[supported BEPs here](https://github.com/webtorrent/webtorrent/blob/master/docs/bep_support.md)**
 
 ### Install
 
