@@ -2,7 +2,7 @@
   "name": "webtorrent-cli",
   "type": "module",
   "description": "WebTorrent, the streaming torrent client. For the command line.",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "author": {
     "name": "WebTorrent LLC",
     "email": "feross@webtorrent.io",
@@ -68,7 +68,7 @@
   "preferGlobal": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/webtorrent/webtorrent-cli.git"
+    "url": "https://github.com/webtorrent/webtorrent-cli.git"
   },
   "scripts": {
     "test": "standard && tape test/*.js",
