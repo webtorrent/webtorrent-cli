@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.1...v4.0.2) (2022-01-04)
+
+
+### Bug Fixes
+
+* dynamic imports ([ad2f997](https://github.com/webtorrent/webtorrent-cli/commit/ad2f997c28859f9f7f9715244f25e95eb827b5f4))
+
 ## [4.0.1](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.0...v4.0.1) (2022-01-04)
 
 
