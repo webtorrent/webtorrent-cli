@@ -1,3 +1,10 @@
+## [4.0.3](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.2...v4.0.3) (2022-02-03)
+
+
+### Bug Fixes
+
+* **deps:** update dependency mime to v3 ([#201](https://github.com/webtorrent/webtorrent-cli/issues/201)) ([0427557](https://github.com/webtorrent/webtorrent-cli/commit/04275570cde6fa2aedf78ffd0321891b7a0999b5))
+
 ## [4.0.2](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.1...v4.0.2) (2022-01-04)
 
 
