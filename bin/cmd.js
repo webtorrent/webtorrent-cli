@@ -6,6 +6,7 @@ import ecstatic from 'ecstatic'
 import fs from 'fs'
 import http from 'http'
 import mime from 'mime'
+import { createRequire } from 'module'
 import moment from 'moment'
 import networkAddress from 'network-address'
 import parseTorrent from 'parse-torrent'
@@ -19,8 +20,10 @@ import Yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import open from 'open'
 
-const { version: webTorrentCliVersion } = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url)))
-const { version: webTorrentVersion } = JSON.parse(fs.readFileSync(new URL('../node_modules/webtorrent/package.json', import.meta.url)))
+const require = createRequire(import.meta.url)
+
+const { version: webTorrentCliVersion } = require('../package.json')
+const { version: webTorrentVersion } = require('webtorrent/package.json')
 
 const yargs = Yargs()
 
