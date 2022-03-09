@@ -1,3 +1,10 @@
+## [4.0.4](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.3...v4.0.4) (2022-03-09)
+
+
+### Bug Fixes
+
+* webtorrent version resolve ([a6d3ee7](https://github.com/webtorrent/webtorrent-cli/commit/a6d3ee75b74a645022971a06797d59a2e4da2707))
+
 ## [4.0.3](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.2...v4.0.3) (2022-02-03)
 
 
