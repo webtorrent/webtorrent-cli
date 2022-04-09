@@ -37,7 +37,7 @@
     "cross-spawn": "7.0.3",
     "semantic-release": "19.0.2",
     "standard": "*",
-    "tape": "5.5.2",
+    "tape": "5.5.3",
     "webtorrent-fixtures": "1.7.5",
     "xtend": "4.0.2"
   },
