@@ -32,6 +32,7 @@ const options = {
     dlna: { desc: 'DNLA', type: 'boolean' },
     mplayer: { desc: 'MPlayer', type: 'boolean' },
     mpv: { desc: 'MPV', type: 'boolean' },
+    celluloid: { desc: 'celluloid', type: 'boolean' },
     omx: { desc: 'OMX', defaultDescription: 'hdmi' },
     vlc: { desc: 'VLC', type: 'boolean' },
     iina: { desc: 'IINA', type: 'boolean' },
@@ -81,6 +82,7 @@ const playerArgs = {
   vlc: ['', '--play-and-exit', '--quiet'],
   iina: ['/Applications/IINA.app/Contents/MacOS/iina-cli', '--keep-running'],
   mpv: ['mpv', '--really-quiet', '--loop=no'],
+  celluloid: ['celluloid'],
   mplayer: ['mplayer', '-really-quiet', '-noidx', '-loop', '0'],
   smplayer: ['smplayer', '-close-at-end'],
   omx: [
@@ -124,15 +126,15 @@ yargs
         stripIndent`
           Usage:
             webtorrent [command] <torrent-id> [options]
-    
+
           Examples:
             webtorrent download "magnet:..." --vlc
             webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
-    
+
           Default output location:
             * when streaming: Temp folder
             * when downloading: Current directory
-    
+
           Specify <torrent-id> as one of:
             * magnet uri
             * http url to .torrent file
@@ -402,7 +404,7 @@ async function runDownload (torrentId) {
       ? `http://${networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
     let allHrefs = []
-    if (argv.playlist && (argv.mpv || argv.mplayer || argv.vlc || argv.smplayer)) {
+    if (argv.playlist && (argv.mpv || argv.celluloid || argv.mplayer || argv.vlc || argv.smplayer)) {
       // set the selected to the first file if not specified
       if (typeof argv.select !== 'number') {
         index = 0
@@ -436,6 +438,8 @@ async function runDownload (torrentId) {
       argv.playlist ? openPlayer(playerArgs.mplayer.concat(allHrefs)) : openPlayer(playerArgs.mplayer.concat(JSON.stringify(href)))
     } else if (argv.mpv) {
       argv.playlist ? openPlayer(playerArgs.mpv.concat(allHrefs)) : openPlayer(playerArgs.mpv.concat(JSON.stringify(href)))
+    } else if (argv.celluloid) {
+      argv.playlist ? openPlayer(playerArgs.celluloid.concat(allHrefs)) : openPlayer(playerArgs.celluloid.concat(JSON.stringify(href)))
     } else if (argv.omx) {
       openPlayer(playerArgs.omx.concat(JSON.stringify(href)))
     } else if (argv.smplayer) {
@@ -447,6 +451,20 @@ async function runDownload (torrentId) {
         .on('error', (err) => {
           if (err) {
             const isMpvFalseError = playerName === 'mpv' && err.code === 4
+
+            if (!isMpvFalseError) {
+              return fatalError(err)
+            }
+          }
+        })
+        .on('exit', playerExit)
+        .unref()
+    }
+    function openPlayer (args) {
+      cp.spawn(JSON.stringify(args[0]), args.slice(1), { stdio: 'ignore', shell: true })
+        .on('error', (err) => {
+          if (err) {
+            const isMpvFalseError = playerName === 'celluloid' && err.code === 4
 
             if (!isMpvFalseError) {
               return fatalError(err)
@@ -824,7 +842,7 @@ function processInputs (inputs, fn) {
   if (Array.isArray(inputs) && inputs.length !== 0) {
     if (inputs.length > 1) {
       const invalidArguments = [
-        'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'omx', 'vlc', 'iina', 'xbmc',
+        'airplay', 'chromecast', 'dlna', 'mplayer', 'mpv', 'celluloid' , 'omx', 'vlc', 'iina', 'xbmc',
         'stdout', 'select', 'subtitles', 'smplayer'
       ]
 
