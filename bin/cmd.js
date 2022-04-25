@@ -29,7 +29,7 @@ const options = {
   streaming: {
     airplay: { desc: 'Apple TV', type: 'boolean' },
     chromecast: { desc: 'Google Chromecast', defaultDescription: 'all' },
-    dlna: { desc: 'DNLA', type: 'boolean' },
+    dlna: { desc: 'DLNA', type: 'boolean' },
     mplayer: { desc: 'MPlayer', type: 'boolean' },
     mpv: { desc: 'MPV', type: 'boolean' },
     omx: { desc: 'OMX', defaultDescription: 'hdmi' },
