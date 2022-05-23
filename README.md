@@ -94,7 +94,7 @@ Commands:
 Options (streaming):
       --airplay     Apple TV                                                               [boolean]
       --chromecast  Google Chromecast                                                 [default: all]
-      --dlna        DNLA                                                                   [boolean]
+      --dlna        DLNA                                                                   [boolean]
       --mplayer     MPlayer                                                                [boolean]
       --mpv         MPV                                                                    [boolean]
       --omx         OMX                                                              [default: hdmi]
