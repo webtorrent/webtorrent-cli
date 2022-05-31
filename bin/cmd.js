@@ -43,7 +43,7 @@ const options = {
   simple: {
     o: { alias: 'out', desc: 'Set download destination', type: 'string', requiresArg: true },
     s: { alias: 'select', desc: 'Select specific file in torrent', defaultDescription: 'List files' },
-    i: { alias: 'interactive-select', desc: 'Interactively select specific file in torrent', type: 'boolean'  },
+    i: { alias: 'interactive-select', desc: 'Interactively select specific file in torrent', type: 'boolean' },
     t: { alias: 'subtitles', desc: 'Load subtitles file', type: 'string', requiresArg: true }
   },
   advanced: {
@@ -388,7 +388,7 @@ async function runDownload (torrentId) {
     }
 
     if (argv['interactive-select'] && torrent.files.length > 1) {
-      const paths = torrent.files.map(d => d.path);
+      const paths = torrent.files.map(d => d.path)
       const answers = await inquirer.prompt([{
         type: 'list',
         name: 'file',
@@ -402,13 +402,13 @@ async function runDownload (torrentId) {
             }
           })
       }])
-      .catch(err => {
-        if (err.isTtyError) {
-          return errorAndExit("Could not render interactive selection mode in this terminal.");
-        } else {
-          return errorAndExit("Could not start interactive selection mode: " + err);
-        }
-      });
+        .catch(err => {
+          if (err.isTtyError) {
+            return errorAndExit('Could not render interactive selection mode in this terminal.')
+          } else {
+            return errorAndExit('Could not start interactive selection mode: ' + err)
+          }
+        })
       argv.select = answers.file
     }
 
