@@ -402,6 +402,13 @@ async function runDownload (torrentId) {
             }
           })
       }])
+      .catch(err => {
+        if (err.isTtyError) {
+          return errorAndExit("Could not render interactive selection mode in this terminal.");
+        } else {
+          return errorAndExit("Could not start interactive selection mode: " + err);
+        }
+      });
       argv.select = answers.file
     }
 
