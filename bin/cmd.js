@@ -5,6 +5,7 @@ import createTorrent from 'create-torrent'
 import ecstatic from 'ecstatic'
 import fs from 'fs'
 import http from 'http'
+import inquirer from 'inquirer'
 import mime from 'mime'
 import moment from 'moment'
 import networkAddress from 'network-address'
@@ -42,6 +43,7 @@ const options = {
   simple: {
     o: { alias: 'out', desc: 'Set download destination', type: 'string', requiresArg: true },
     s: { alias: 'select', desc: 'Select specific file in torrent', defaultDescription: 'List files' },
+    i: { alias: 'interactive-select', desc: 'Interactively select specific file in torrent', type: 'boolean' },
     t: { alias: 'subtitles', desc: 'Load subtitles file', type: 'string', requiresArg: true }
   },
   advanced: {
@@ -370,7 +372,7 @@ async function runDownload (torrentId) {
     }
   }
 
-  function onReady () {
+  async function onReady () {
     if (argv.select && typeof argv.select !== 'number') {
       console.log('Select a file to download:')
 
@@ -383,6 +385,31 @@ async function runDownload (torrentId) {
       console.log('Example: webtorrent download "magnet:..." --select 0')
 
       return gracefulExit()
+    }
+
+    if (argv['interactive-select'] && torrent.files.length > 1) {
+      const paths = torrent.files.map(d => d.path)
+      const answers = await inquirer.prompt([{
+        type: 'list',
+        name: 'file',
+        message: 'Choose one file',
+        choices: Array.from(torrent.files)
+          .sort((file1, file2) => file1.path.localeCompare(file2.path))
+          .map(function (file, i) {
+            return {
+              name: file.name + ' : ' + prettierBytes(file.length),
+              value: paths.indexOf(file.path)
+            }
+          })
+      }])
+        .catch(err => {
+          if (err.isTtyError) {
+            return errorAndExit('Could not render interactive selection mode in this terminal.')
+          } else {
+            return errorAndExit('Could not start interactive selection mode: ' + err)
+          }
+        })
+      argv.select = answers.file
     }
 
     // if no index specified, use largest file
