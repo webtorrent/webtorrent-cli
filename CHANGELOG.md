@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.4...v4.1.0) (2022-06-02)
+
+
+### Features
+
+* add peerflix-style interactive select mode ([#234](https://github.com/webtorrent/webtorrent-cli/issues/234)) ([4540a0a](https://github.com/webtorrent/webtorrent-cli/commit/4540a0af33a09779f5847a255d986add28688483))
+
 ## [4.0.4](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.3...v4.0.4) (2022-03-09)
 
 

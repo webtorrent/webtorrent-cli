@@ -2,7 +2,7 @@
   "name": "webtorrent-cli",
   "type": "module",
   "description": "WebTorrent, the streaming torrent client. For the command line.",
-  "version": "4.0.4",
+  "version": "4.1.0",
   "author": {
     "name": "WebTorrent LLC",
     "email": "feross@webtorrent.io",
