@@ -105,11 +105,12 @@ Options (streaming):
       --stdout      Standard out (implies --quiet)                                         [boolean]
 
 Options (simple):
-  -o, --out        Set download destination                                                 [string]
-  -s, --select     Select specific file in torrent                             [default: List files]
-  -t, --subtitles  Load subtitles file                                                      [string]
-  -h, --help       Show help information                                                   [boolean]
-  -v, --version    Show version information                                                [boolean]
+  -o, --out                 Set download destination                                        [string]
+  -s, --select              Select specific file in torrent                    [default: List files]
+  -i, --interactive-select  Interactively select specific file in torrent                  [boolean]
+  -t, --subtitles           Load subtitles file                                             [string]
+  -h, --help                Show help information                                          [boolean]
+  -v, --version             Show version information                                       [boolean]
 
 Options (advanced)
   -p, --port            Change the http server port                         [number] [default: 8000]
