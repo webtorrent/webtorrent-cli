@@ -685,7 +685,7 @@ function drawTorrent (torrent) {
     if (playerName) {
       line(chalk`{green Streaming to:} {bold ${playerName}}  {green Server running at:} {bold ${href}}`)
     } else if (server) {
-      line(chalk`{green Server running at:}{bold ${href}}`)
+      line(chalk`{green Server running at:} {bold ${href}}`)
     }
 
     if (argv.out) {
