@@ -15,6 +15,7 @@
     "url": "https://github.com/webtorrent/webtorrent-cli/issues"
   },
   "dependencies": {
+    "@koush/wrtc": "^0.5.3",
     "chalk": "^4.1.1",
     "common-tags": "^1.8.0",
     "create-torrent": "^5.0.0",

@@ -20,6 +20,17 @@ import Yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import open from 'open'
 
+// this adds node support to web-clients
+import { announceList } from 'create-torrent'
+import wrtc from '@koush/wrtc'
+
+// this was in global, but is it needed?
+globalThis.WEBTORRENT_ANNOUNCE = announceList
+  .map(arr => arr[0])
+  .filter(url => url.indexOf('wss://') === 0 || url.indexOf('ws://') === 0)
+
+globalThis.WRTC = wrtc
+
 const { version: webTorrentCliVersion } = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url)))
 const webTorrentVersion = WebTorrent.VERSION
 
