@@ -421,6 +421,16 @@ async function runDownload (torrentId) {
       return errorAndExit(`There's no file that maps to index ${index}`)
     }
 
+    torrent.deselect(0, torrent.pieces.length - 1, false);
+    for (let i = 0; i < torrent.files.length; i++) {
+      const file = torrent.files[i];
+      if (i === index) {
+        file.select();
+      } else {
+        file.deselect();
+      }
+    }
+
     onSelection(index)
   }
 
