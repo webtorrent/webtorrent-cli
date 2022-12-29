@@ -293,6 +293,7 @@ async function runDownload (torrentId) {
   client.on('error', fatalError)
 
   const torrent = client.add(torrentId, {
+    store: MemoryChunkStore,
     path: argv.out,
     announce: argv.announce
   })
