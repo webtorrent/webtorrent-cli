@@ -112,36 +112,41 @@ process.on('exit', code => {
 process.on('SIGINT', gracefulExit)
 process.on('SIGTERM', gracefulExit)
 
+// Yargs setup
 yargs
   .wrap(Math.min(100, yargs.terminalWidth()))
   .scriptName('webtorrent')
   .locale('en')
   .fail((msg, err) => { console.log(chalk`\n{red Error:} ${msg || err}`); process.exit(1) })
-  .usage(
-    fs.readFileSync(new URL('ascii-logo.txt', import.meta.url), 'utf-8')
-      .split('\n')
-      .map(line => chalk`{bold ${line.substring(0, 20)}}{red ${line.substring(20)}}`)
-      .join('\n')
-      .concat('\n',
-        stripIndent`
-          Usage:
-            webtorrent [command] <torrent-id> [options]
-    
-          Examples:
-            webtorrent download "magnet:..." --vlc
-            webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
-    
-          Default output location:
-            * when streaming: Temp folder
-            * when downloading: Current directory
-    
-          Specify <torrent-id> as one of:
-            * magnet uri
-            * http url to .torrent file
-            * filesystem path to .torrent file
-            * info hash (hex string)\n\n
-        `)
-  )
+
+// Yargs show logo `webtorrent`
+fs.readFileSync(new URL('ascii-logo.txt', import.meta.url), 'utf-8')
+  .split('\n')
+  .map(line => chalk.red(line))
+  .map(line => yargs.usage(line))
+
+// Yargs show example how usage
+stripIndent`
+  Usage:
+    webtorrent [command] <torrent-id> [options]
+
+  Examples:
+    webtorrent download "magnet:..." --vlc
+    webtorrent "magnet:..." --vlc --player-args="--video-on-top --repeat"
+
+  Default output location:
+    * when streaming: Temp folder
+    * when downloading: Current directory
+
+  Specify <torrent-id> as one of:
+    * magnet uri
+    * http url to .torrent file
+    * filesystem path to .torrent file
+    * info hash (hex string)\n\n
+`
+  .split('\n')
+  .map(line => yargs.usage(chalk.bold(line)))
+
 yargs
   .command(commands)
   .options(options.streaming).group(Object.keys(options.streaming), 'Options (streaming): ')
@@ -685,7 +690,7 @@ function drawTorrent (torrent) {
     if (playerName) {
       line(chalk`{green Streaming to:} {bold ${playerName}}  {green Server running at:} {bold ${href}}`)
     } else if (server) {
-      line(chalk`{green Server running at:}{bold ${href}}`)
+      line(chalk`{green Server running at:} {bold ${href}}`)
     }
 
     if (argv.out) {
