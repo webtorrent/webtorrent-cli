@@ -20,7 +20,7 @@
     "create-torrent": "^5.0.0",
     "dlnacasts": "^0.1.0",
     "ecstatic": "^4.1.4",
-    "inquirer": "^8.2.2",
+    "inquirer": "^9.0.0",
     "memory-chunk-store": "^1.3.5",
     "mime": "^3.0.0",
     "moment": "^2.29.1",
