@@ -680,8 +680,12 @@ function drawTorrent (torrent) {
     console.clear()
 
     line(chalk`{green ${seeding ? 'Seeding' : 'Downloading'}:} {bold ${torrent.name}}`)
-    if (!seeding) line(chalk`{green Info hash:} ${torrent.infoHash}`)
-    if (seeding) line(chalk`{green Magnet:} ${torrent.magnetURI}`)
+
+    if (!seeding) {
+      line(chalk`{green Info hash:} ${torrent.infoHash}`)
+    } else {
+      line(chalk`{green Magnet:} ${torrent.magnetURI}`)
+    }
 
     const portInfo = []
     if (argv['torrent-port']) portInfo.push(chalk`{green Torrent port:} ${argv['torrent-port']}`)
