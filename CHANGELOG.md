@@ -1,3 +1,21 @@
+# [5.0.0](https://github.com/webtorrent/webtorrent-cli/compare/v4.1.0...v5.0.0) (2024-06-02)
+
+
+* BREAKING CHANGE: Update WebTorrent to v2 and drop NodeJS < 16 (#303) ([3e34c7f](https://github.com/webtorrent/webtorrent-cli/commit/3e34c7f69ff2041be5c8d12b130959a1b58111cc)), closes [#303](https://github.com/webtorrent/webtorrent-cli/issues/303)
+
+
+### BREAKING CHANGES
+
+* Update WebTorrent to v2 and drop support for NodeJS < 16
+
+* feat: update create-torrent to 6.0.17
+
+* feat: improve logging by including peer type (TCP,UTP,WEBRTC,WEBSEED)
+
+* fix: update ci to drop NodeJS 14
+
+* fix: update docs to reflect changes, adds webrtc connectivity but requires native deps.
+
 # [4.1.0](https://github.com/webtorrent/webtorrent-cli/compare/v4.0.4...v4.1.0) (2022-06-02)
 
 
