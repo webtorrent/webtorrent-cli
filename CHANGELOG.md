@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/webtorrent/webtorrent-cli/compare/v5.0.0...v5.0.1) (2024-06-02)
+
+
+### Bug Fixes
+
+* -s / --select not working ([#304](https://github.com/webtorrent/webtorrent-cli/issues/304)) ([825b0ee](https://github.com/webtorrent/webtorrent-cli/commit/825b0eed54123f81ce4fe67ba638095aa7eda80b))
+
 # [5.0.0](https://github.com/webtorrent/webtorrent-cli/compare/v4.1.0...v5.0.0) (2024-06-02)
 
 
