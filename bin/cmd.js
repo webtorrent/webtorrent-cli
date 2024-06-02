@@ -353,7 +353,8 @@ async function runDownload (torrentId) {
   })
 
   // Start http server
-  server = torrent.createServer()
+  const instance = client.createServer({}, 'node')
+  server = instance.server
 
   server.listen(argv.port)
     .on('error', err => {
@@ -439,11 +440,11 @@ async function runDownload (torrentId) {
       if (typeof argv.select !== 'number') {
         index = 0
       }
-      torrent.files.forEach((file, i) => allHrefs.push(JSON.stringify(`${href}/${i}/${encodeURIComponent(file.name)}`)))
+      torrent.files.forEach((file, i) => allHrefs.push(new URL(href + file.streamURL).toString()))
       // set the first file to the selected index
       allHrefs = allHrefs.slice(index, allHrefs.length).concat(allHrefs.slice(0, index))
     } else {
-      href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
+      href = new URL(href + torrent.files[index].streamURL).toString()
     }
 
     if (playerName) {
