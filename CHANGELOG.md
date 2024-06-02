@@ -1,3 +1,10 @@
+# [5.1.0](https://github.com/webtorrent/webtorrent-cli/compare/v5.0.1...v5.1.0) (2024-06-02)
+
+
+### Features
+
+* add magnetURI on seeding and infoHash on downloading ([#308](https://github.com/webtorrent/webtorrent-cli/issues/308)) ([b36a82e](https://github.com/webtorrent/webtorrent-cli/commit/b36a82e4d3cfb9f7f3b59577535b97075069121c))
+
 ## [5.0.1](https://github.com/webtorrent/webtorrent-cli/compare/v5.0.0...v5.0.1) (2024-06-02)
 
 
