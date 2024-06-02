@@ -737,13 +737,41 @@ function drawTorrent (torrent) {
           : `${Math.floor(100 * bits / piececount)}%`
       }
 
-      let str = chalk`%s {magenta %s} %s {cyan %s} {red %s}`
+      let str = chalk`%s %s {magenta %s} %s {cyan %s} {red %s}`
+      let type = ''
+
+      switch (wire.type) {
+        case 'webSeed':
+          type = 'WEBSEED'
+          break
+        case 'webrtc':
+          type = 'WEBRTC'
+          break
+        case 'tcpIncoming':
+          type = 'TCPIN'
+          break
+        case 'tcpOutgoing':
+          type = 'TCPOUT'
+          break
+        case 'utpIncoming':
+          type = 'UTPIN'
+          break
+        case 'utpOutgoing':
+          type = 'UTPOUT'
+          break
+        default:
+          type = 'UNKNOWN'
+          break
+      }
+
+      const addr = (wire.remoteAddress
+        ? `${wire.remoteAddress}:${wire.remotePort}`
+        : 'Unknown')
 
       const args = [
         progress.padEnd(3),
-        (wire.remoteAddress
-          ? `${wire.remoteAddress}:${wire.remotePort}`
-          : 'Unknown').padEnd(25),
+        type.padEnd(7),
+        addr.padEnd(32),
         prettierBytes(wire.downloaded).padEnd(10),
         (prettierBytes(wire.downloadSpeed()) + '/s').padEnd(12),
         (prettierBytes(wire.uploadSpeed()) + '/s').padEnd(12)
