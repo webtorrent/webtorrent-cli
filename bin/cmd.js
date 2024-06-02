@@ -311,7 +311,6 @@ async function runDownload (torrentId) {
   }
 
   torrent.on('infoHash', () => {
-
     if (argv.quiet) return
 
     updateMetadata()
