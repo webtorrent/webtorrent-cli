@@ -21,11 +21,7 @@
 i.e. *THIS PACKAGE*, is for using WebTorrent from the **command line**.
 
 `webtorrent-cli` is a simple torrent client for use in node.js, as a command line app. It
-uses TCP and UDP to talk to other torrent clients.
-
-**NOTE**: To connect to "web peers" (browsers) in addition to normal BitTorrent peers, use
-[`webtorrent-hybrid`](https://www.npmjs.com/package/webtorrent-hybrid) which includes WebRTC
-support for node.
+uses TCP, UDP and WebRTC to talk to other torrent clients.
 
 To use WebTorrent in the browser, see [`webtorrent`](https://www.npmjs.com/package/webtorrent).
 
@@ -33,7 +29,6 @@ To use WebTorrent in the browser, see [`webtorrent`](https://www.npmjs.com/packa
 
 - **Use [WebTorrent](https://webtorrent.io) from the command line!**
 - **Insanely fast**
-- **Pure Javascript** (no native dependencies)
 - Streaming
   - Stream to **AirPlay**, **Chromecast**, **VLC player**, **IINA**, and many other devices/players
   - Fetches pieces from the network on-demand so seeking is supported (even before torrent is finished)

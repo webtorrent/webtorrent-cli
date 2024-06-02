@@ -353,7 +353,8 @@ async function runDownload (torrentId) {
   })
 
   // Start http server
-  server = torrent.createServer()
+  const instance = client.createServer({}, 'node')
+  server = instance.server
 
   server.listen(argv.port)
     .on('error', err => {
@@ -439,11 +440,11 @@ async function runDownload (torrentId) {
       if (typeof argv.select !== 'number') {
         index = 0
       }
-      torrent.files.forEach((file, i) => allHrefs.push(JSON.stringify(`${href}/${i}/${encodeURIComponent(file.name)}`)))
+      torrent.files.forEach((file, i) => allHrefs.push(new URL(href + file.streamURL).toString()))
       // set the first file to the selected index
       allHrefs = allHrefs.slice(index, allHrefs.length).concat(allHrefs.slice(0, index))
     } else {
-      href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
+      href = new URL(href + torrent.files[index].streamURL).toString()
     }
 
     if (playerName) {
@@ -736,13 +737,41 @@ function drawTorrent (torrent) {
           : `${Math.floor(100 * bits / piececount)}%`
       }
 
-      let str = chalk`%s {magenta %s} %s {cyan %s} {red %s}`
+      let str = chalk`%s %s {magenta %s} %s {cyan %s} {red %s}`
+      let type = ''
+
+      switch (wire.type) {
+        case 'webSeed':
+          type = 'WEBSEED'
+          break
+        case 'webrtc':
+          type = 'WEBRTC'
+          break
+        case 'tcpIncoming':
+          type = 'TCPIN'
+          break
+        case 'tcpOutgoing':
+          type = 'TCPOUT'
+          break
+        case 'utpIncoming':
+          type = 'UTPIN'
+          break
+        case 'utpOutgoing':
+          type = 'UTPOUT'
+          break
+        default:
+          type = 'UNKNOWN'
+          break
+      }
+
+      const addr = (wire.remoteAddress
+        ? `${wire.remoteAddress}:${wire.remotePort}`
+        : 'Unknown')
 
       const args = [
         progress.padEnd(3),
-        (wire.remoteAddress
-          ? `${wire.remoteAddress}:${wire.remotePort}`
-          : 'Unknown').padEnd(25),
+        type.padEnd(7),
+        addr.padEnd(32),
         prettierBytes(wire.downloaded).padEnd(10),
         (prettierBytes(wire.downloadSpeed()) + '/s').padEnd(12),
         (prettierBytes(wire.uploadSpeed()) + '/s').padEnd(12)
