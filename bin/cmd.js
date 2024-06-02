@@ -302,14 +302,15 @@ async function runDownload (torrentId) {
     announce: argv.announce
   })
 
+  if ('select' in argv) {
+    torrent.so = argv.select.toString()
+  }
+
   if (argv.verbose) {
     torrent.on('warning', handleWarning)
   }
 
   torrent.on('infoHash', () => {
-    if ('select' in argv) {
-      torrent.so = argv.select.toString()
-    }
 
     if (argv.quiet) return
 
