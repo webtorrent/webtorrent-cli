@@ -20,7 +20,7 @@ import Yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import open from 'open'
 
-const { version: webTorrentCliVersion } = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url)))
+import webTorrentCliVersion from '../version.cjs'
 const webTorrentVersion = WebTorrent.VERSION
 
 const yargs = Yargs()
