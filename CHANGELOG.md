@@ -1,3 +1,10 @@
+## [5.1.1](https://github.com/webtorrent/webtorrent-cli/compare/v5.1.0...v5.1.1) (2024-06-13)
+
+
+### Bug Fixes
+
+* update version import to be consistent with WebTorrent ([#310](https://github.com/webtorrent/webtorrent-cli/issues/310)) ([4bf287b](https://github.com/webtorrent/webtorrent-cli/commit/4bf287b2242e6ea2cf98c9e65659599f62fdef4b))
+
 # [5.1.0](https://github.com/webtorrent/webtorrent-cli/compare/v5.0.1...v5.1.0) (2024-06-02)
 
 
