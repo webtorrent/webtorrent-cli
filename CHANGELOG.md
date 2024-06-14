@@ -1,3 +1,10 @@
+## [5.1.2](https://github.com/webtorrent/webtorrent-cli/compare/v5.1.1...v5.1.2) (2024-06-14)
+
+
+### Bug Fixes
+
+* include version.cjs in the .npmignore, which is preventing the published package from functioning correctly. ([#311](https://github.com/webtorrent/webtorrent-cli/issues/311)) ([c3138e0](https://github.com/webtorrent/webtorrent-cli/commit/c3138e02ed9f508b4878b86ab29332a2d4543a92))
+
 ## [5.1.1](https://github.com/webtorrent/webtorrent-cli/compare/v5.1.0...v5.1.1) (2024-06-13)
 
 
