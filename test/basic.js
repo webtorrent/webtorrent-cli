@@ -117,7 +117,7 @@ test('Command line: webtorrent download <torrent file> (with local content)', t 
 //   cp.exec(`${CMD} downloadmeta '${fixtures.sintel.magnetURI}' --out ${fixturesPath}`, (err, data) => {
 //     t.error(err)
 //     const parsedTorrent = parseTorrent(fs.readFileSync(`${fixturesPath}/${fixtures.sintel.parsedTorrent.infoHash}.torrent`))
-//     // Sintel torrent file contain two fields not availaible from the DHT
+//     // Sintel torrent file contain two fields not available from the DHT
 //     const expectedTorrent = fixtures.sintel.parsedTorrent
 //     delete expectedTorrent.created
 //     delete expectedTorrent.createdBy
