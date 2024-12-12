@@ -1,3 +1,5 @@
+## [5.1.3](https://github.com/webtorrent/webtorrent-cli/compare/v5.1.2...v5.1.3) (2024-12-12)
+
 ## [5.1.2](https://github.com/webtorrent/webtorrent-cli/compare/v5.1.1...v5.1.2) (2024-06-14)
 
 
