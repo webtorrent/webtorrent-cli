@@ -1,0 +1,52 @@
+{
+  "version": "0.1.0",
+  "project": "webtorrent-cli",
+  "outputDir": ".dg",
+  "updated": "2025-07-10T05:45:08.418Z",
+  "casts": [
+    {
+      "name": "showhelp",
+      "title": "showhelp",
+      "created": "2025-07-10T05:43:20.738Z",
+      "updated": "2025-07-10T05:43:20.738Z",
+      "interactive": false,
+      "validation": {
+        "mode": "auto"
+      },
+      "command": "webtorrent --help"
+    },
+    {
+      "name": "showhelp2",
+      "title": "showhelp2",
+      "created": "2025-07-10T05:44:02.768Z",
+      "updated": "2025-07-10T05:44:02.768Z",
+      "interactive": false,
+      "validation": {
+        "mode": "auto"
+      },
+      "command": "webtorrent --help"
+    },
+    {
+      "name": "showversion",
+      "title": "showversion",
+      "created": "2025-07-10T05:44:30.615Z",
+      "updated": "2025-07-10T05:44:30.615Z",
+      "interactive": false,
+      "validation": {
+        "mode": "auto"
+      },
+      "command": "webtorrent --verison"
+    },
+    {
+      "name": "showversion2",
+      "title": "showversion2",
+      "created": "2025-07-10T05:45:08.417Z",
+      "updated": "2025-07-10T05:45:08.417Z",
+      "interactive": false,
+      "validation": {
+        "mode": "auto"
+      },
+      "command": "webtorrent --version"
+    }
+  ]
+}
