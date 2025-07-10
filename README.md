@@ -51,9 +51,15 @@ npm install webtorrent-cli -g
 ```
 
 ### Usage
-
-```bash
+```
 $ webtorrent --help
+```
+![showhelp2](.dg/svg/showhelp2-dark.svg)
+```
+$ webtorrent --version
+```
+![showversion2](.dg/svg/showversion2-dark.svg)
+```bash
                _     _                            _
  __      _____| |__ | |_ ___  _ __ _ __ ___ _ __ | |_
  \ \ /\ / / _ \ '_ \| __/ _ \| '__| '__/ _ \ '_ \| __|
