@@ -476,7 +476,7 @@ async function runDownload (torrentId) {
     }
 
     function openPlayer (args) {
-      cp.spawn(JSON.stringify(args[0]), args.slice(1), { stdio: 'ignore', shell: true })
+      cp.spawn(args[0], args.slice(1), { stdio: 'ignore' })
         .on('error', (err) => {
           if (err) {
             const isMpvFalseError = playerName === 'mpv' && err.code === 4
