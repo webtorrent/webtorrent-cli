@@ -5,19 +5,23 @@ on:
     branches:
       - master
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
+          node-version: 24
       - name: Cache
         uses: actions/cache@v5
         with:
@@ -28,7 +32,7 @@ jobs:
       - name: Install dependencies
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm i
+        run: npm ci
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
