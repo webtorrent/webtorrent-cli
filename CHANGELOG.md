@@ -1,3 +1,20 @@
+# [6.0.0](https://github.com/webtorrent/webtorrent-cli/compare/v5.1.3...v6.0.0) (2026-04-14)
+
+
+### Bug Fixes
+
+* **deps:** update dependency open to v11 ([#343](https://github.com/webtorrent/webtorrent-cli/issues/343)) [skip ci] ([b34e00f](https://github.com/webtorrent/webtorrent-cli/commit/b34e00f239a0f4bc625d327e5ef723f272c7163e))
+
+
+### Features
+
+* **node:** update Node.js engine requirement to version 20 ([98445cf](https://github.com/webtorrent/webtorrent-cli/commit/98445cf8f4222cbdcfdfc9cf917efbd277c46214))
+
+
+### BREAKING CHANGES
+
+* **node:** requires node 20
+
 ## [5.1.3](https://github.com/webtorrent/webtorrent-cli/compare/v5.1.2...v5.1.3) (2024-12-12)
 
 ## [5.1.2](https://github.com/webtorrent/webtorrent-cli/compare/v5.1.1...v5.1.2) (2024-06-14)
