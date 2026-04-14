@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm ci
+        run: npm i
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
