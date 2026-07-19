@@ -31,7 +31,7 @@
     "vlc-command": "^1.2.0",
     "webtorrent": "^2.3.0",
     "winreg": "^1.2.4",
-    "yargs": "^17.0.1"
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@webtorrent/semantic-release-config": "1.0.11",
