@@ -299,12 +299,9 @@ async function runDownload (torrentId) {
 
   const torrent = client.add(torrentId, {
     path: argv.out,
-    announce: argv.announce
+    announce: argv.announce,
+    deselect: 'select' in argv || argv['interactive-select']
   })
-
-  if ('select' in argv) {
-    torrent.so = argv.select.toString()
-  }
 
   if (argv.verbose) {
     torrent.on('warning', handleWarning)
@@ -344,11 +341,12 @@ async function runDownload (torrentId) {
         .unref()
     }
     if (!playerName && !serving && argv.out && !argv['keep-seeding']) {
-      torrent.destroy()
-
-      if (torrentCount === 0) {
-        gracefulExit()
-      }
+      process.nextTick(() => {
+        torrent.destroy()
+        if (torrentCount === 0) {
+          gracefulExit()
+        }
+      })
     }
   })
 
@@ -363,6 +361,8 @@ async function runDownload (torrentId) {
         server.close()
         const serv = server.listen(0)
         argv.port = server.address().port
+        serv.once('listening', initServer)
+        serv.once('connection', () => (serving = true))
         return serv
       } else return fatalError(err)
     })
@@ -390,7 +390,8 @@ async function runDownload (torrentId) {
       console.log('\nTo select a specific file, re-run `webtorrent` with "--select [index]"')
       console.log('Example: webtorrent download "magnet:..." --select 0')
 
-      return gracefulExit()
+      process.nextTick(gracefulExit)
+      return
     }
 
     if (argv['interactive-select'] && torrent.files.length > 1) {
@@ -425,6 +426,10 @@ async function runDownload (torrentId) {
 
     if (!torrent.files[index]) {
       return errorAndExit(`There's no file that maps to index ${index}`)
+    }
+
+    if (typeof argv.select === 'number') {
+      torrent.files[index].select()
     }
 
     onSelection(index)
