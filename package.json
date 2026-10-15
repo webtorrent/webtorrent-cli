@@ -15,7 +15,7 @@
     "url": "https://github.com/webtorrent/webtorrent-cli/issues"
   },
   "dependencies": {
-    "chalk": "^4.1.1",
+    "chalk": "^6.0.0",
     "common-tags": "^1.8.0",
     "create-torrent": "^6.0.17",
     "dlnacasts": "^0.1.0",
